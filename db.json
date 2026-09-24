@@ -1,0 +1,197 @@
+{
+"produtos": [
+{
+"id": "1",
+"codigo": "PRD001",
+"nome": "Cabo de Rede UTP Cat6",
+"categoria": "Redes",
+"fabricante": "Furukawa",
+"unidadeMedida": "Metro",
+"precoCusto": 2.50,
+"precoVenda": 4.50,
+"estoqueMinimo": 100,
+"estoqueAtual": 350,
+"status": "Ativo"
+},
+{
+"id": "2",
+"codigo": "PRD002",
+"nome": "Switch 24 Portas Gigabit",
+"categoria": "Equipamentos",
+"fabricante": "TP-Link",
+"unidadeMedida": "Unidade",
+"precoCusto": 450.00,
+"precoVenda": 680.00,
+"estoqueMinimo": 5,
+"estoqueAtual": 12,
+"status": "Ativo"
+},
+{
+"id": "3",
+"codigo": "PRD003",
+"nome": "Roteador Wi-Fi 6 Dual Band",
+"categoria": "Equipamentos",
+"fabricante": "Intelbras",
+"unidadeMedida": "Unidade",
+"precoCusto": 280.00,
+"precoVenda": 420.00,
+"estoqueMinimo": 10,
+"estoqueAtual": 8,
+"status": "Ativo"
+},
+{
+"id": "4",
+"codigo": "PRD004",
+"nome": "Conector RJ45 Cat6 (Pacote c/ 100)",
+"categoria": "Acessórios",
+"fabricante": "Storm",
+"unidadeMedida": "Pacote",
+"precoCusto": 35.00,
+"precoVenda": 60.00,
+"estoqueMinimo": 15,
+"estoqueAtual": 4,
+"status": "Ativo"
+},
+{
+"id": "5",
+"codigo": "PRD005",
+"nome": "Alicate de Crimpagem RJ45/RJ11",
+"categoria": "Ferramentas",
+"fabricante": "Hikari",
+"unidadeMedida": "Unidade",
+"precoCusto": 45.00,
+"precoVenda": 85.00,
+"estoqueMinimo": 3,
+"estoqueAtual": 0,
+"status": "Inativo"
+}
+],
+"fornecedores": [
+{
+"id": "1",
+"codigo": "FOR001",
+"razaoSocial": "Network Brasil Distribuidora LTDA",
+"cnpj": "12.345.678/0001-90",
+"telefone": "(11) 4002-8922",
+"email": "contato@netbrasil.com.br",
+"cidade": "São Paulo",
+"uf": "SP",
+"status": "Ativo"
+},
+{
+"id": "2",
+"codigo": "FOR002",
+"razaoSocial": "TechConnect Equipamentos de Informática",
+"cnpj": "98.765.432/0001-10",
+"telefone": "(21) 3344-5566",
+"email": "vendas@techconnect.com.br",
+"cidade": "Rio de Janeiro",
+"uf": "RJ",
+"status": "Ativo"
+},
+{
+"id": "3",
+"codigo": "FOR003",
+"razaoSocial": "Acessórios & Telecom Telecomunicações",
+"cnpj": "45.678.912/0001-34",
+"telefone": "(31) 2511-9000",
+"email": "comercial@acessoriostelecom.com",
+"cidade": "Belo Horizonte",
+"uf": "MG",
+"status": "Inativo"
+}
+],
+"estoque": [
+{
+"id": "1",
+"produtoId": "1",
+"codigoProduto": "PRD001",
+"produto": "Cabo de Rede UTP Cat6",
+"quantidade": 350,
+"localizacao": "Corredor A - Prateleira 2",
+"statusEstoque": "Normal"
+},
+{
+"id": "2",
+"produtoId": "2",
+"codigoProduto": "PRD002",
+"produto": "Switch 24 Portas Gigabit",
+"quantidade": 12,
+"localizacao": "Corredor B - Prateleira 1",
+"statusEstoque": "Normal"
+},
+{
+"id": "3",
+"produtoId": "3",
+"codigoProduto": "PRD003",
+"produto": "Roteador Wi-Fi 6 Dual Band",
+"quantidade": 8,
+"localizacao": "Corredor B - Prateleira 3",
+"statusEstoque": "Alerta"
+},
+{
+"id": "4",
+"produtoId": "4",
+"codigoProduto": "PRD004",
+"produto": "Conector RJ45 Cat6 (Pacote c/ 100)",
+"quantidade": 4,
+"localizacao": "Corredor A - Prateleira 4",
+"statusEstoque": "Crítico"
+},
+{
+"id": "5",
+"produtoId": "5",
+"codigoProduto": "PRD005",
+"produto": "Alicate de Crimpagem RJ45/RJ11",
+"quantidade": 0,
+"localizacao": "Corredor C - Prateleira 1",
+"statusEstoque": "Esgotado"
+}
+],
+"movimentacoes": [
+{
+"id": "1",
+"data": "2024-03-15",
+"tipo": "Entrada",
+"produtoId": "1",
+"produto": "Cabo de Rede UTP Cat6",
+"quantidade": 500,
+"origemDestino": "Network Brasil Distribuidora",
+"usuario": "Carlos Silva",
+"observacao": "Compra NF 1042"
+},
+{
+"id": "2",
+"data": "2024-03-18",
+"tipo": "Saída",
+"produtoId": "1",
+"produto": "Cabo de Rede UTP Cat6",
+"quantidade": 150,
+"origemDestino": "Projeto Cliente XYZ",
+"usuario": "Ana Oliveira",
+"observacao": "Instalação de infraestrutura"
+},
+{
+"id": "3",
+"data": "2024-03-20",
+"tipo": "Entrada",
+"produtoId": "2",
+"produto": "Switch 24 Portas Gigabit",
+"quantidade": 10,
+"origemDestino": "TechConnect Equipamentos",
+"usuario": "Carlos Silva",
+"observacao": "Reposição de estoque"
+},
+{
+"id": "4",
+"data": "2024-03-22",
+"tipo": "Saída",
+"produtoId": "3",
+"produto": "Roteador Wi-Fi 6 Dual Band",
+"quantidade": 2,
+"origemDestino": "Manutenção Interna",
+"usuario": "Marcos Lima",
+"observacao": "Substituição de equipamento queimado"
+}
+]
+}
