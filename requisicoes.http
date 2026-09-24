@@ -1,0 +1,7 @@
+### Deletar um produto pelo ID
+DELETE http://localhost:3000/produtos/1
+Content-Type: application/json
+
+### Deletar um fornecedor pelo ID
+DELETE http://localhost:3000/fornecedores/1
+Content-Type: application/json
