@@ -1,4 +1,151 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Manutenção | NetStock</title><link rel="stylesheet" href="styles.css"></head>
-<body><div class="app-shell"><aside class="sidebar"><a class="brand" href="index.html"><img src="logo.svg" alt="Logo NetStock"><span><strong>NetStock</strong><small>inventário de rede</small></span></a><div class="nav-label">Workspace</div><nav class="nav" aria-label="Navegação principal"><a href="index.html"><span class="icon">◈</span>Dashboard</a><a href="inventario.html"><span class="icon">▦</span>Inventário</a><a href="equipamento.html"><span class="icon">⌁</span>Equipamento</a><a class="active" href="manutencao.html"><span class="icon">◷</span>Manutenção</a></nav><p class="sidebar-note">Visibilidade clara para cada ativo conectado à sua operação.</p></aside><main class="main"><header class="topbar"><div><div class="eyebrow">Operação e suporte</div><h1>Manutenção</h1><p class="subtitle">Acompanhe os ativos que precisam de atenção.</p></div><div class="user-chip"><span>Administradora</span><span class="avatar">MC</span></div></header><section class="grid stats"><article class="panel stat"><span class="stat-label">Chamados abertos</span><strong class="stat-value">07</strong><span class="stat-detail" style="color:var(--amber)">2 alta prioridade</span></article><article class="panel stat"><span class="stat-label">Em atendimento</span><strong class="stat-value">04</strong><span class="stat-detail">3 técnicos ativos</span></article><article class="panel stat"><span class="stat-label">Concluídos no mês</span><strong class="stat-value">18</strong><span class="stat-detail">↑ 12% vs. mês anterior</span></article><article class="panel stat"><span class="stat-label">Tempo médio</span><strong class="stat-value">2,4d</strong><span class="stat-detail">Dentro da meta</span></article></section><section class="panel"><div class="panel-header"><h2>Fila de manutenção</h2><button class="action">+ Novo registro</button></div><div class="panel-body maintenance-list"><div class="maintenance-card"><span class="maintenance-symbol">!</span><div><strong>Servidor SV-031</strong><p>Falha intermitente de armazenamento · Data center / Rack 01</p></div><span class="badge warn">Alta prioridade</span></div><div class="maintenance-card"><span class="maintenance-symbol">◷</span><div><strong>Switch SW-017</strong><p>Substituição de fonte de energia · Filial Norte / Rack 02</p></div><span class="badge warn">Aguardando peça</span></div><div class="maintenance-card"><span class="maintenance-symbol">◷</span><div><strong>Access point AP-072</strong><p>Atualização de firmware programada · Bloco B / Sala 14</p></div><span class="badge ok">Agendado</span></div></div></section></main></div></body></html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manutenção | NetStock</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Estilos do Modal para Novo Registro */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-card {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    .card-item-manutencao {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .badge-status {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .badge-status.alta { background: #fef3c7; color: #92400e; }
+    .badge-status.alerta { background: #fef3c7; color: #b45309; }
+    .badge-status.ok { background: #dcfce7; color: #15803d; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="index.html">
+        <img src="logo.svg" alt="Logo NetStock">
+        <span><strong>NetStock</strong><small>inventário de rede</small></span>
+      </a>
+      <div class="nav-label">Workspace</div>
+      <nav class="nav" aria-label="Navegação principal">
+        <a href="index.html"><span class="icon">◈</span>Dashboard</a>
+        <a href="inventario.html"><span class="icon">▦</span>Inventário</a>
+        <a href="equipamento.html"><span class="icon">⌁</span>Equipamento</a>
+        <a class="active" href="manutencao.html"><span class="icon">◷</span>Manutenção</a>
+      </nav>
+      <p class="sidebar-note">Visibilidade clara para cada ativo conectado à sua operação.</p>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">OPERAÇÃO E SUPORTE</div>
+          <h1>Manutenção</h1>
+          <p class="subtitle">Acompanhe os ativos que precisam de atenção.</p>
+        </div>
+        <div class="user-chip">
+          <span>Administradora</span>
+          <span class="avatar">MC</span>
+        </div>
+      </header>
+
+      <!-- Indicadores do Topo -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+        <div class="panel" style="padding: 20px;">
+          <div style="font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase;">Chamados Abertos</div>
+          <div id="stat-abertos" style="font-size: 2rem; font-weight: 800; margin: 8px 0; font-family: serif;">00</div>
+          <small id="stat-prioridade" style="color: #d97706; font-weight: 600;">0 alta prioridade</small>
+        </div>
+
+        <div class="panel" style="padding: 20px;">
+          <div style="font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase;">Em Atendimento</div>
+          <div id="stat-atendimento" style="font-size: 2rem; font-weight: 800; margin: 8px 0; font-family: serif;">04</div>
+          <small style="color: #0d9488; font-weight: 600;">3 técnicos ativos</small>
+        </div>
+
+        <div class="panel" style="padding: 20px;">
+          <div style="font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase;">Concluídos no Mês</div>
+          <div id="stat-concluidos" style="font-size: 2rem; font-weight: 800; margin: 8px 0; font-family: serif;">18</div>
+          <small style="color: #16a34a; font-weight: 600;">↑ 12% vs. mês anterior</small>
+        </div>
+
+        <div class="panel" style="padding: 20px;">
+          <div style="font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase;">Tempo Médio</div>
+          <div style="font-size: 2rem; font-weight: 800; margin: 8px 0; font-family: serif;">2,4d</div>
+          <small style="color: #0d9488; font-weight: 600;">Dentro da meta</small>
+        </div>
+      </div>
+
+      <!-- Fila de Manutenção -->
+      <section class="panel" style="padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="font-size: 1.25rem;">Fila de manutenção</h2>
+          <button id="btn-novo-chamado" style="padding: 10px 16px; background: #0d9488; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+            + Novo registro
+          </button>
+        </div>
+
+        <div id="container-fila-manutencao"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal com Seletor Dinâmico do Inventário -->
+  <div id="modal-chamado" class="modal-overlay">
+    <div class="modal-card">
+      <h3 style="margin-bottom: 16px; font-size: 1.2rem;">Abrir Chamado de Manutenção</h3>
+      <form id="form-novo-chamado" style="display: flex; flex-direction: column; gap: 12px;">
+        <label style="font-size: 0.85rem; font-weight: bold; color: #555;">Equipamento do Inventário:</label>
+        <select id="m-eqp" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold;">
+          <option value="">A carregar inventário...</option>
+        </select>
+
+        <label style="font-size: 0.85rem; font-weight: bold; color: #555;">Descrição do Problema / Localização:</label>
+        <input type="text" id="m-desc" placeholder="Ex: Falha na fonte · Data center / Rack 01" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+
+        <label style="font-size: 0.85rem; font-weight: bold; color: #555;">Prioridade / Estado:</label>
+        <select id="m-status" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+          <option value="Alta prioridade|alta|!">Alta prioridade</option>
+          <option value="Aguardando peça|alerta|◷">Aguardando peça</option>
+          <option value="Agendado|ok|◷">Agendado</option>
+        </select>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px;">
+          <button type="button" id="btn-fechar-modal" style="padding: 8px 16px; background: #e2e8f0; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Cancelar</button>
+          <button type="submit" style="padding: 8px 16px; background: #0d9488; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Salvar Registro</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
