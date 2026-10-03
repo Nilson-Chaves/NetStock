@@ -13,6 +13,13 @@
       "tipo": "switch",
       "precoVenda": 1000,
       "id": "885kGOaJcds"
+    },
+    {
+      "codigo": "COD-2939",
+      "nome": "roteador teste 2",
+      "tipo": "roteador",
+      "precoVenda": 800,
+      "id": "fPsXlhg17P8"
     }
   ],
   "equipamentos": [],
@@ -34,12 +41,12 @@
       "icone": "◷"
     },
     {
-      "id": "4L4Fn_QqSIQ",
-      "equipamento": "roteador",
+      "id": "TTL4uAHuE5A",
+      "equipamento": "roteador teste 2",
       "descricao": "sem funcionar",
-      "status": "Alta prioridade",
-      "tipoStatus": "alta",
-      "icone": "!"
+      "status": "Aguardando peça",
+      "tipoStatus": "alerta",
+      "icone": "◷"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

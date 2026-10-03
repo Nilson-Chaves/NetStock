@@ -28,7 +28,7 @@
         <div>
           <div class="eyebrow">Ativos de rede</div>
           <h1>Inventário</h1>
-          <p class="subtitle">248 equipamentos distribuídos em 14 locais.</p>
+          <p class="subtitle">Equipamentos cadastrados na infraestrutura.</p>
         </div>
         <div class="user-chip">
           <span>Administradora</span>
@@ -36,14 +36,11 @@
         </div>
       </header>
 
-      <!-- Form de Cadastro Rápido Funcional Integrado -->
-      <form id="form-produto" style="background: #ffffff; padding: 16px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-        <input type="text" id="nome" placeholder="Nome do equipamento" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; flex: 1;">
-        <input type="text" id="categoria" placeholder="Tipo (ex: Switch, Roteador)" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; flex: 1;">
-        <input type="number" id="preco" placeholder="Valor / Preço (R$)" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 140px;">
-        <button type="submit" style="padding: 10px 18px; background-color: #0d9488; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
-          + Cadastrar Ativo
-        </button>
+      <form id="form-produto" class="form-cadastro-inline">
+        <input type="text" id="nome" placeholder="Nome do equipamento" required class="form-input flex-1">
+        <input type="text" id="categoria" placeholder="Tipo (ex: Switch, Roteador)" required class="form-input flex-1">
+        <input type="number" id="preco" placeholder="Valor / Preço (R$)" required class="form-input w-140">
+        <button type="submit" class="btn-primary">+ Cadastrar Ativo</button>
       </form>
 
       <section class="panel">
@@ -62,7 +59,6 @@
                 <th>Ações</th>
               </tr>
             </thead>
-            <!-- Tbody onde o JS insere os dados vindos da API -->
             <tbody id="tabela-produtos-body"></tbody>
           </table>
         </div>

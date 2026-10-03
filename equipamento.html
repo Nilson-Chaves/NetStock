@@ -31,10 +31,9 @@
           <p class="subtitle">Registro técnico e histórico de movimentações.</p>
         </div>
         
-        <!-- Seletor para alternar de Equipamento -->
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <label for="select-equipamento" style="font-size: 0.85rem; font-weight: bold; color: #555;">Selecionar Ativo:</label>
-          <select id="select-equipamento" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; background: white; font-weight: bold; cursor: pointer;">
+        <div class="topbar-actions">
+          <label for="select-equipamento" class="stat-label">Selecionar Ativo:</label>
+          <select id="select-equipamento" class="form-input">
             <option value="">Carregando equipamentos...</option>
           </select>
           <div class="user-chip">
@@ -44,60 +43,57 @@
         </div>
       </header>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-        <!-- Card de Informações do Equipamento -->
-        <section class="panel" style="padding: 24px;">
-          <h2 id="eqp-nome" style="font-size: 1.5rem; margin-bottom: 4px;">Carregando...</h2>
-          <p id="eqp-sub" style="color: #666; margin-bottom: 12px;"></p>
+      <div class="grid equal-col">
+        <!-- Card de Informações -->
+        <section class="panel panel-padded">
+          <h2 id="eqp-nome" class="eqp-title">Carregando...</h2>
+          <p id="eqp-sub" class="eqp-sub"></p>
           <span id="eqp-status" class="badge ok">Em operação</span>
 
-          <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+          <hr class="divider">
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 0.9rem;">
+          <div class="eqp-grid">
             <div>
               <strong>ENDEREÇO IP</strong>
-              <p id="eqp-ip" style="margin-top: 4px; color: #444;">-</p>
+              <p id="eqp-ip" class="subtitle">-</p>
             </div>
             <div>
               <strong>MAC ADDRESS</strong>
-              <p id="eqp-mac" style="margin-top: 4px; color: #444;">-</p>
+              <p id="eqp-mac" class="subtitle">-</p>
             </div>
             <div>
               <strong>LOCALIZAÇÃO</strong>
-              <p id="eqp-loc" style="margin-top: 4px; color: #444;">-</p>
+              <p id="eqp-loc" class="subtitle">-</p>
             </div>
             <div>
               <strong>RESPONSÁVEL</strong>
-              <p id="eqp-resp" style="margin-top: 4px; color: #444;">-</p>
+              <p id="eqp-resp" class="subtitle">-</p>
             </div>
             <div>
               <strong>FABRICANTE</strong>
-              <p id="eqp-fab" style="margin-top: 4px; color: #444;">-</p>
+              <p id="eqp-fab" class="subtitle">-</p>
             </div>
             <div>
               <strong>DATA / HORA ENTRADA</strong>
-              <p id="eqp-entrada" style="margin-top: 4px; color: #444;">-</p>
+              <p id="eqp-entrada" class="subtitle">-</p>
             </div>
           </div>
         </section>
 
-        <!-- Histórico e Registro de Eventos -->
-        <section class="panel" style="padding: 24px;">
-          <h2 style="margin-bottom: 16px;">Histórico do equipamento</h2>
+        <!-- Histórico e Eventos -->
+        <section class="panel panel-padded">
+          <h2>Histórico do equipamento</h2>
 
-          <form id="form-evento" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; background: #f9f9f9; padding: 14px; border-radius: 6px; border: 1px solid #eee;">
+          <form id="form-evento" class="form-box">
             <strong>Registrar Novo Evento / Movimentação</strong>
-            <input type="text" id="evt-titulo" placeholder="Título do evento (ex: Troca de Sala, Manutenção)" required style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-            <input type="text" id="evt-loc" placeholder="Nova Localização (ex: Sala 102 - Bloco B)" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-            <input type="text" id="evt-resp" placeholder="Novo Responsável (ex: Lucas Andrade)" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-            <input type="text" id="evt-desc" placeholder="Observação / Descrição complementar" required style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-            
-            <button type="submit" style="padding: 10px; background-color: #0d9488; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
-              + Registrar Evento
-            </button>
+            <input type="text" id="evt-titulo" placeholder="Título do evento (ex: Troca de Sala)" required class="form-input">
+            <input type="text" id="evt-loc" placeholder="Nova Localização" class="form-input">
+            <input type="text" id="evt-resp" placeholder="Novo Responsável" class="form-input">
+            <input type="text" id="evt-desc" placeholder="Observação / Descrição" required class="form-input">
+            <button type="submit" class="btn-primary">+ Registrar Evento</button>
           </form>
 
-          <div id="container-historico" style="display: flex; flex-direction: column; gap: 16px;"></div>
+          <div id="container-historico" class="grid"></div>
         </section>
       </div>
     </main>

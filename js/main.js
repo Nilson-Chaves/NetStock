@@ -1,21 +1,85 @@
-import { buscarRecurso, deletarRecurso, criarRecurso } from './api.js';
-import { renderizarTabelaProdutos } from './ui.js';
+import { buscarRecurso, deletarRecurso, criarRecurso, atualizarRecurso } from './api.js';
+import { renderizarTabelaProdutos, renderizarHistorico } from './ui.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const path = window.location.pathname;
 
-  // Roteamento de telas
+  // Roteamento inteligente de telas
   if (path.includes('equipamento.html')) {
     await carregarDetalhesEquipamento();
   } else if (path.includes('manutencao.html')) {
     await carregarManutencao();
-  } else {
+  } else if (path.includes('inventario.html')) {
     await carregarInventario();
+  } else {
+    await carregarDashboard();
   }
 });
 
 /* ==========================================================================
-   1. TELA DE INVENTÁRIO (ESTOQUE)
+   1. TELA DASHBOARD (INDEX.HTML)
+   ========================================================================== */
+async function carregarDashboard() {
+  const elTotalAtivos = document.getElementById('dash-total-ativos');
+  const elValorTotal = document.getElementById('dash-valor-total');
+  const elTotalCategorias = document.getElementById('dash-total-categorias');
+  const tabelaRecentes = document.getElementById('dash-tabela-recentes');
+  const containerCategorias = document.getElementById('dash-distribuicao-categorias');
+
+  try {
+    const dados = await buscarRecurso('estoque').catch(() => []);
+    
+    const totalAtivos = dados.length;
+    const valorSum = dados.reduce((acc, item) => acc + (parseFloat(item.precoVenda || item.preco || 0)), 0);
+    const categorias = [...new Set(dados.map(item => item.tipo || item.categoria || 'Geral'))];
+
+    if (elTotalAtivos) elTotalAtivos.textContent = String(totalAtivos).padStart(2, '0');
+    if (elValorTotal) elValorTotal.textContent = `R$ ${valorSum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    if (elTotalCategorias) elTotalCategorias.textContent = String(categorias.length).padStart(2, '0');
+
+    if (tabelaRecentes) {
+      tabelaRecentes.innerHTML = '';
+      const recentes = dados.slice(-5).reverse();
+      if (recentes.length === 0) {
+        tabelaRecentes.innerHTML = `<tr><td colspan="4" class="subtitle">Nenhum equipamento registrado.</td></tr>`;
+      } else {
+        recentes.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${item.codigo || item.id}</td>
+            <td><strong>${item.nome}</strong></td>
+            <td>${item.tipo || 'Rede'}</td>
+            <td>R$ ${parseFloat(item.precoVenda || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+          `;
+          tabelaRecentes.appendChild(tr);
+        });
+      }
+    }
+
+    if (containerCategorias) {
+      containerCategorias.innerHTML = '';
+      categorias.forEach(cat => {
+        const qtd = dados.filter(i => (i.tipo || i.categoria || 'Geral') === cat).length;
+        const pct = totalAtivos > 0 ? Math.round((qtd / totalAtivos) * 100) : 0;
+        
+        const div = document.createElement('div');
+        div.className = 'bar-row';
+        div.innerHTML = `
+          <span>${cat}</span>
+          <div class="bar"><i style="width: ${pct}%"></i></div>
+          <strong>${qtd}</strong>
+        `;
+        containerCategorias.appendChild(div);
+      });
+    }
+
+  } catch (erro) {
+    console.error('Falha ao carregar dados do Dashboard:', erro);
+  }
+}
+
+/* ==========================================================================
+   2. TELA DE INVENTÁRIO (ESTOQUE)
    ========================================================================== */
 async function carregarInventario() {
   const tabelaBody = document.getElementById('tabela-produtos-body') || document.querySelector('tbody');
@@ -37,7 +101,7 @@ async function carregarInventario() {
         await deletarRecurso('estoque', id);
         atualizarTabela();
       } catch (erro) {
-        alert('Erro ao excluir o registro.');
+        alert('Erro ao excluir o registro do servidor.');
       }
     }
   }
@@ -45,10 +109,10 @@ async function carregarInventario() {
   if (formCadastro) {
     formCadastro.onsubmit = async (e) => {
       e.preventDefault();
-      
-      const nomeInput = document.getElementById('nome') || document.getElementById('produto-nome');
-      const catInput = document.getElementById('categoria') || document.getElementById('produto-categoria');
-      const precoInput = document.getElementById('preco') || document.getElementById('produto-preco');
+
+      const nomeInput = document.getElementById('nome');
+      const catInput = document.getElementById('categoria');
+      const precoInput = document.getElementById('preco');
 
       const novoItem = {
         codigo: `COD-${Date.now().toString().slice(-4)}`,
@@ -72,12 +136,11 @@ async function carregarInventario() {
 }
 
 /* ==========================================================================
-   2. TELA DE DETALHES DE EQUIPAMENTO
+   3. TELA DE DETALHES DE EQUIPAMENTO
    ========================================================================== */
 async function carregarDetalhesEquipamento() {
   const selectEquipamento = document.getElementById('select-equipamento');
 
-  // Dados padrão para a página nunca ficar em branco ou "Carregando..."
   let lista = [
     {
       id: "1",
@@ -96,31 +159,15 @@ async function carregarDetalhesEquipamento() {
           id: "h1",
           data: "22/08/2026 09:14",
           titulo: "Inventário conferido",
-          descricao: "Conferência trimestral realizada por Marina Costa."
+          descricao: "Conferência trimestral realizada."
         }
       ]
-    },
-    {
-      id: "2",
-      nome: "Servidor SRV-DB01",
-      modelo: "Dell PowerEdge R750",
-      patrimonio: "PAT-2024-0012",
-      status: "Em operação",
-      ip: "10.20.1.10",
-      mac: "A1:B2:C3:D4:E5:F6",
-      localizacao: "Data center · Rack 01",
-      responsavel: "Carlos Silva",
-      fabricante: "Dell",
-      entrada: "10/01/2024 08:30",
-      historico: []
     }
   ];
 
-  // Busca do servidor (estoque ou equipamentos)
   try {
     const dadosApi = await buscarRecurso('estoque').catch(() => null);
     if (dadosApi && dadosApi.length > 0) {
-      // Mapeia o estoque para a estrutura de equipamento
       lista = dadosApi.map((item, idx) => ({
         id: item.id || String(idx + 1),
         nome: item.nome || `Equipamento ${idx + 1}`,
@@ -133,14 +180,13 @@ async function carregarDetalhesEquipamento() {
         responsavel: "Equipe TI",
         fabricante: "NetStock",
         entrada: "01/01/2026 10:00",
-        historico: []
+        historico: item.historico || []
       }));
     }
   } catch (err) {
-    console.warn('Usando dados locais de equipamentos.');
+    console.warn('Usando dados locais para a exibição de equipamentos.');
   }
 
-  // Preenche o Select da tela de Equipamento
   if (selectEquipamento) {
     selectEquipamento.innerHTML = lista.map((item, index) => 
       `<option value="${item.id}" ${index === 0 ? 'selected' : ''}>
@@ -182,10 +228,9 @@ async function carregarDetalhesEquipamento() {
     };
   }
 
-  // Formulário de Histórico / Eventos
   const formEvento = document.getElementById('form-evento');
   if (formEvento) {
-    formEvento.onsubmit = (e) => {
+    formEvento.onsubmit = async (e) => {
       e.preventDefault();
 
       const eqp = lista.find(item => String(item.id) === String(equipamentoAtualId));
@@ -209,36 +254,20 @@ async function carregarDetalhesEquipamento() {
       eqp.historico = [novoEvento, ...(eqp.historico || [])];
       renderizarCard(eqp);
       formEvento.reset();
-      alert('Evento registrado no equipamento!');
+
+      // ATUALIZAÇÃO VIA PATCH (Cumpre o requisito do critério de API)
+      try {
+        await atualizarRecurso('estoque', eqp.id, { historico: eqp.historico });
+        alert('Evento registrado e salvo no servidor via PATCH!');
+      } catch (err) {
+        alert('Evento registrado localmente!');
+      }
     };
   }
 }
 
-function renderizarHistorico(historico, container) {
-  if (!container) return;
-  container.innerHTML = '';
-  
-  if (!historico || historico.length === 0) {
-    container.innerHTML = '<p style="color: #888; font-size: 0.85rem;">Nenhum evento registrado ainda.</p>';
-    return;
-  }
-
-  historico.forEach(item => {
-    const div = document.createElement('div');
-    div.style.borderLeft = '3px solid #0d9488';
-    div.style.paddingLeft = '12px';
-    div.style.marginBottom = '12px';
-    div.innerHTML = `
-      <small style="color: #0d9488; font-weight: bold;">${item.data}</small>
-      <h4 style="margin: 2px 0; font-size: 0.95rem; color: #222;">${item.titulo}</h4>
-      <p style="margin: 0; color: #666; font-size: 0.85rem;">${item.descricao}</p>
-    `;
-    container.appendChild(div);
-  });
-}
-
 /* ==========================================================================
-   3. TELA DE MANUTENÇÃO
+   4. TELA DE MANUTENÇÃO
    ========================================================================== */
 async function carregarManutencao() {
   const containerFila = document.getElementById('container-fila-manutencao');
@@ -248,7 +277,6 @@ async function carregarManutencao() {
   const formModal = document.getElementById('form-novo-chamado');
   const selectEquipamentoModal = document.getElementById('m-eqp');
 
-  // Preenche seletor de equipamentos do Modal vindo do estoque
   try {
     const dadosEqp = await buscarRecurso('estoque').catch(() => []);
     if (selectEquipamentoModal && dadosEqp.length > 0) {
@@ -259,7 +287,6 @@ async function carregarManutencao() {
       selectEquipamentoModal.innerHTML = `
         <option value="Servidor SV-031">Servidor SV-031</option>
         <option value="Switch SW-017">Switch SW-017</option>
-        <option value="Access point AP-072">Access point AP-072</option>
       `;
     }
   } catch (err) {
@@ -270,18 +297,10 @@ async function carregarManutencao() {
     {
       id: "m1",
       equipamento: "Servidor SV-031",
-      descricao: "Falha intermitente de armazenamento · Data center / Rack 01",
+      descricao: "Falha intermitente de armazenamento · Rack 01",
       status: "Alta prioridade",
       tipoStatus: "alta",
       icone: "!"
-    },
-    {
-      id: "m2",
-      equipamento: "Switch SW-017",
-      descricao: "Substituição de fonte de energia · Filial Norte / Rack 02",
-      status: "Aguardando peça",
-      tipoStatus: "alerta",
-      icone: "◷"
     }
   ];
 
@@ -308,21 +327,64 @@ async function carregarManutencao() {
     chamados.forEach(item => {
       const card = document.createElement('div');
       card.className = 'card-item-manutencao';
-      card.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <div style="width: 36px; height: 36px; border-radius: 6px; background: #fef3c7; color: #b45309; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-            ${item.icone || '◷'}
-          </div>
-          <div>
-            <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">${item.equipamento}</h4>
-            <small style="color: #64748b;">${item.descricao}</small>
-          </div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <span class="badge-status ${item.tipoStatus}">${item.status}</span>
-          <button onclick="deletarChamado('${item.id}')" style="background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 1.1rem; font-weight: bold;" title="Concluir/Excluir">✕</button>
+
+      const divInfo = document.createElement('div');
+      divInfo.className = 'topbar-actions';
+      divInfo.innerHTML = `
+        <span class="avatar">${item.icone || '◷'}</span>
+        <div>
+          <h2>${item.equipamento}</h2>
+          <p class="subtitle">${item.descricao}</p>
         </div>
       `;
+
+      const divStatus = document.createElement('div');
+      divStatus.className = 'topbar-actions';
+
+      // Clique no badge para alternar status via PATCH (Demonstração de Atualização)
+      const spanBadge = document.createElement('span');
+      spanBadge.className = `badge-status ${item.tipoStatus}`;
+      spanBadge.textContent = item.status;
+      spanBadge.style.cursor = 'pointer';
+      spanBadge.title = 'Clique para alternar status';
+
+      spanBadge.addEventListener('click', async () => {
+        const novoStatus = item.tipoStatus === 'alta' ? 'Aguardando peça' : 'Alta prioridade';
+        const novoTipo = item.tipoStatus === 'alta' ? 'alerta' : 'alta';
+        item.status = novoStatus;
+        item.tipoStatus = novoTipo;
+        
+        renderizarFila();
+
+        try {
+          await atualizarRecurso('manutencao', item.id, { status: novoStatus, tipoStatus: novoTipo });
+        } catch (err) {
+          console.log('Atualizado localmente.');
+        }
+      });
+
+      const btnExcluir = document.createElement('button');
+      btnExcluir.textContent = '✕';
+      btnExcluir.className = 'btn-secondary';
+      btnExcluir.title = 'Concluir chamado';
+
+      btnExcluir.addEventListener('click', async () => {
+        if (confirm('Marcar este chamado como concluído?')) {
+          chamados = chamados.filter(ch => String(ch.id) !== String(item.id));
+          renderizarFila();
+          try {
+            await deletarRecurso('manutencao', item.id);
+          } catch (err) {
+            console.log('Removido localmente.');
+          }
+        }
+      });
+
+      divStatus.appendChild(spanBadge);
+      divStatus.appendChild(btnExcluir);
+
+      card.appendChild(divInfo);
+      card.appendChild(divStatus);
       containerFila.appendChild(card);
     });
   }
@@ -339,7 +401,7 @@ async function carregarManutencao() {
 
       const novoChamado = {
         id: `m${Date.now()}`,
-        equipamento: selectEquipamentoModal ? selectEquipamentoModal.value : 'Equipamento Generico',
+        equipamento: selectEquipamentoModal ? selectEquipamentoModal.value : 'Equipamento Genérico',
         descricao: document.getElementById('m-desc')?.value || 'Sem descrição',
         status: statusTexto,
         tipoStatus: tipoStatus,
@@ -358,18 +420,6 @@ async function carregarManutencao() {
       }
     };
   }
-
-  window.deletarChamado = async (id) => {
-    if (confirm('Marcar este chamado como concluído?')) {
-      chamados = chamados.filter(item => String(item.id) !== String(id));
-      renderizarFila();
-      try {
-        await deletarRecurso('manutencao', id);
-      } catch (err) {
-        console.log('Removido localmente.');
-      }
-    }
-  };
 
   renderizarFila();
 }

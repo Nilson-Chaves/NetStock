@@ -5,47 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Manutenção | NetStock</title>
   <link rel="stylesheet" href="styles.css">
-  <style>
-    /* Estilos do Modal para Novo Registro */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.4);
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-card {
-      background: white;
-      padding: 24px;
-      border-radius: 8px;
-      width: 100%;
-      max-width: 480px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    }
-    .card-item-manutencao {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    }
-    .badge-status {
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-    .badge-status.alta { background: #fef3c7; color: #92400e; }
-    .badge-status.alerta { background: #fef3c7; color: #b45309; }
-    .badge-status.ok { background: #dcfce7; color: #15803d; }
-  </style>
 </head>
 <body>
   <div class="app-shell">
@@ -78,69 +37,63 @@
       </header>
 
       <!-- Indicadores do Topo -->
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
-        <div class="panel" style="padding: 20px;">
-          <div style="font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase;">Chamados Abertos</div>
-          <div id="stat-abertos" style="font-size: 2rem; font-weight: 800; margin: 8px 0; font-family: serif;">00</div>
-          <small id="stat-prioridade" style="color: #d97706; font-weight: 600;">0 alta prioridade</small>
-        </div>
-
-        <div class="panel" style="padding: 20px;">
-          <div style="font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase;">Em Atendimento</div>
-          <div id="stat-atendimento" style="font-size: 2rem; font-weight: 800; margin: 8px 0; font-family: serif;">04</div>
-          <small style="color: #0d9488; font-weight: 600;">3 técnicos ativos</small>
-        </div>
-
-        <div class="panel" style="padding: 20px;">
-          <div style="font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase;">Concluídos no Mês</div>
-          <div id="stat-concluidos" style="font-size: 2rem; font-weight: 800; margin: 8px 0; font-family: serif;">18</div>
-          <small style="color: #16a34a; font-weight: 600;">↑ 12% vs. mês anterior</small>
-        </div>
-
-        <div class="panel" style="padding: 20px;">
-          <div style="font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase;">Tempo Médio</div>
-          <div style="font-size: 2rem; font-weight: 800; margin: 8px 0; font-family: serif;">2,4d</div>
-          <small style="color: #0d9488; font-weight: 600;">Dentro da meta</small>
-        </div>
-      </div>
+      <section class="grid stats">
+        <article class="panel stat">
+          <span class="stat-label">Chamados Abertos</span>
+          <strong id="stat-abertos" class="stat-value">00</strong>
+          <span id="stat-prioridade" class="stat-detail">0 alta prioridade</span>
+        </article>
+        <article class="panel stat">
+          <span class="stat-label">Em Atendimento</span>
+          <strong id="stat-atendimento" class="stat-value">04</strong>
+          <span class="stat-detail">3 técnicos ativos</span>
+        </article>
+        <article class="panel stat">
+          <span class="stat-label">Concluídos no Mês</span>
+          <strong id="stat-concluidos" class="stat-value">18</strong>
+          <span class="stat-detail">↑ 12% vs. mês anterior</span>
+        </article>
+        <article class="panel stat">
+          <span class="stat-label">Tempo Médio</span>
+          <strong class="stat-value">2,4d</strong>
+          <span class="stat-detail">Dentro da meta</span>
+        </article>
+      </section>
 
       <!-- Fila de Manutenção -->
-      <section class="panel" style="padding: 24px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h2 style="font-size: 1.25rem;">Fila de manutenção</h2>
-          <button id="btn-novo-chamado" style="padding: 10px 16px; background: #0d9488; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
-            + Novo registro
-          </button>
+      <section class="panel panel-padded">
+        <div class="panel-header">
+          <h2>Fila de manutenção</h2>
+          <button id="btn-novo-chamado" class="btn-primary">+ Novo registro</button>
         </div>
-
         <div id="container-fila-manutencao"></div>
       </section>
     </main>
   </div>
 
-  <!-- Modal com Seletor Dinâmico do Inventário -->
+  <!-- Modal -->
   <div id="modal-chamado" class="modal-overlay">
     <div class="modal-card">
-      <h3 style="margin-bottom: 16px; font-size: 1.2rem;">Abrir Chamado de Manutenção</h3>
-      <form id="form-novo-chamado" style="display: flex; flex-direction: column; gap: 12px;">
-        <label style="font-size: 0.85rem; font-weight: bold; color: #555;">Equipamento do Inventário:</label>
-        <select id="m-eqp" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold;">
+      <h2>Abrir Chamado de Manutenção</h2>
+      <form id="form-novo-chamado" class="modal-form">
+        <label class="stat-label">Equipamento do Inventário:</label>
+        <select id="m-eqp" required class="form-input">
           <option value="">A carregar inventário...</option>
         </select>
 
-        <label style="font-size: 0.85rem; font-weight: bold; color: #555;">Descrição do Problema / Localização:</label>
-        <input type="text" id="m-desc" placeholder="Ex: Falha na fonte · Data center / Rack 01" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+        <label class="stat-label">Descrição do Problema / Localização:</label>
+        <input type="text" id="m-desc" placeholder="Ex: Falha na fonte · Data center" required class="form-input">
 
-        <label style="font-size: 0.85rem; font-weight: bold; color: #555;">Prioridade / Estado:</label>
-        <select id="m-status" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+        <label class="stat-label">Prioridade / Estado:</label>
+        <select id="m-status" class="form-input">
           <option value="Alta prioridade|alta|!">Alta prioridade</option>
           <option value="Aguardando peça|alerta|◷">Aguardando peça</option>
           <option value="Agendado|ok|◷">Agendado</option>
         </select>
 
-        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px;">
-          <button type="button" id="btn-fechar-modal" style="padding: 8px 16px; background: #e2e8f0; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Cancelar</button>
-          <button type="submit" style="padding: 8px 16px; background: #0d9488; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Salvar Registro</button>
+        <div class="modal-actions">
+          <button type="button" id="btn-fechar-modal" class="btn-secondary">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar Registro</button>
         </div>
       </form>
     </div>
