@@ -1,24 +1,17 @@
 {
   "name": "netstock",
   "version": "1.0.0",
-  "description": "Protótipo estático de um sistema para inventário de ativos de redes de computadores.",
-  "main": "index.js",
+  "description": "Sistema de Controle de Ativos e Estoque de TI - NetStock",
+  "main": "js/main.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "api": "json-server db.json --port 3000 --host 0.0.0.0",
+    "web": "http-server -p 5500 --host 0.0.0.0",
+    "start": "concurrently \"npm run api\" \"npm run web\""
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Nilson-Chaves/NetStock.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/Nilson-Chaves/NetStock/issues"
-  },
-  "homepage": "https://github.com/Nilson-Chaves/NetStock#readme",
-  "dependencies": {
-    "json-server": "^1.0.0-beta.15"
+  "devDependencies": {
+    "concurrently": "8.2.2",
+    "http-server": "14.1.1",
+    "json-server": "0.17.4"
   }
 }

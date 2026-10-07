@@ -1,37 +1,37 @@
 {
   "estoque": [
     {
-      "codigo": "COD-7011",
-      "nome": "roteador teste",
-      "tipo": "roteador",
-      "precoVenda": 200,
-      "id": "OKlW4Dqf85Q"
+      "codigo": "COD-5740",
+      "nome": " Servidor SV-031",
+      "tipo": "servidor",
+      "precoVenda": 1500,
+      "id": "jKBQ4pR",
+      "historico": [
+        {
+          "id": "h1791413329947",
+          "data": "07/10/2026, 19:48:49",
+          "titulo": "troca de sala",
+          "descricao": "nada | Local: sala 15 | Resp: nilson chaves"
+        }
+      ]
     },
     {
-      "codigo": "COD-7691",
-      "nome": "switch teste",
-      "tipo": "switch",
-      "precoVenda": 1000,
-      "id": "885kGOaJcds"
+      "codigo": "COD-6059",
+      "nome": "Access point AP-072",
+      "tipo": "access point",
+      "precoVenda": 100,
+      "id": "fQ5H0K7"
     },
     {
-      "codigo": "COD-2939",
-      "nome": "roteador teste 2",
+      "codigo": "COD-9602",
+      "nome": "Roteador",
       "tipo": "roteador",
-      "precoVenda": 800,
-      "id": "fPsXlhg17P8"
+      "precoVenda": 500,
+      "id": "6FtV681"
     }
   ],
   "equipamentos": [],
   "manutencao": [
-    {
-      "id": "m1",
-      "equipamento": "Servidor SV-031",
-      "descricao": "Falha intermitente de armazenamento · Data center / Rack 01",
-      "status": "Alta prioridade",
-      "tipoStatus": "alta",
-      "icone": "!"
-    },
     {
       "id": "m3",
       "equipamento": "Access point AP-072",
@@ -41,12 +41,12 @@
       "icone": "◷"
     },
     {
-      "id": "TTL4uAHuE5A",
-      "equipamento": "roteador teste 2",
-      "descricao": "sem funcionar",
-      "status": "Aguardando peça",
-      "tipoStatus": "alerta",
-      "icone": "◷"
+      "id": "m1791413288843",
+      "equipamento": " Servidor SV-031",
+      "descricao": "Falha intermitente de armazenamento",
+      "status": "Alta prioridade",
+      "tipoStatus": "alta",
+      "icone": "!"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
