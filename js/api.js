@@ -27,6 +27,22 @@ export async function criarRecurso(recurso, dados) {
   }
 }
 
+// Atualização parcial de dados (alterar status, localização, destino de descarte)
+export async function atualizarRecurso(recurso, id, dadosParciais) {
+  try {
+    const resposta = await fetch(`${API_URL}/${recurso}/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dadosParciais)
+    });
+    if (!resposta.ok) throw new Error('Erro ao atualizar recurso');
+    return await resposta.json();
+  } catch (erro) {
+    console.error(`[Erro API]:`, erro);
+    throw erro;
+  }
+}
+
 export async function deletarRecurso(recurso, id) {
   try {
     const resposta = await fetch(`${API_URL}/${recurso}/${id}`, {

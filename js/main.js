@@ -1,5 +1,5 @@
-import { buscarRecurso, deletarRecurso, criarRecurso } from './api.js';
-import { renderizarTabelaProdutos } from './ui.js';
+import { buscarRecurso, deletarRecurso, criarRecurso, atualizarRecurso } from './api.js';
+import { renderizarTabelaProdutos, renderizarTabelaTombamento, renderizarPainelDescarte } from './ui.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const path = window.location.pathname;
@@ -9,6 +9,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     await carregarDetalhesEquipamento();
   } else if (path.includes('manutencao.html')) {
     await carregarManutencao();
+  } else if (path.includes('tombamento.html')) {
+    await carregarTombamento();
+  } else if (path.includes('descarte.html')) {
+    await carregarDescarte();
   } else {
     await carregarInventario();
   }
@@ -77,62 +81,38 @@ async function carregarInventario() {
 async function carregarDetalhesEquipamento() {
   const selectEquipamento = document.getElementById('select-equipamento');
 
-  // Dados padrão para a página nunca ficar em branco ou "Carregando..."
   let lista = [
     {
-      id: "1",
-      nome: "Switch SW-024",
-      modelo: "Cisco Catalyst 9200",
-      patrimonio: "PAT-2024-0088",
+      id: "EQP-2026-001",
+      nome: "Switch Cisco Catalyst 2960",
+      modelo: "Catalyst 2960",
+      patrimonio: "PAT-884920",
       status: "Em operação",
-      ip: "10.20.3.24",
+      ip: "10.0.156.1",
       mac: "00:1A:2B:3C:4D:5E",
-      localizacao: "Data center · Rack 03",
-      responsavel: "Lucas Andrade",
+      localizacao: "Rack 02 - Data Center Bloco B",
+      responsavel: "Wellington Silva",
       fabricante: "Cisco",
-      entrada: "18/03/2024 11:05",
-      historico: [
-        {
-          id: "h1",
-          data: "22/08/2026 09:14",
-          titulo: "Inventário conferido",
-          descricao: "Conferência trimestral realizada por Marina Costa."
-        }
-      ]
-    },
-    {
-      id: "2",
-      nome: "Servidor SRV-DB01",
-      modelo: "Dell PowerEdge R750",
-      patrimonio: "PAT-2024-0012",
-      status: "Em operação",
-      ip: "10.20.1.10",
-      mac: "A1:B2:C3:D4:E5:F6",
-      localizacao: "Data center · Rack 01",
-      responsavel: "Carlos Silva",
-      fabricante: "Dell",
-      entrada: "10/01/2024 08:30",
+      entrada: "15/03/2026 10:00",
       historico: []
     }
   ];
 
-  // Busca do servidor (estoque ou equipamentos)
   try {
-    const dadosApi = await buscarRecurso('estoque').catch(() => null);
+    const dadosApi = await buscarRecurso('equipamentos').catch(() => null);
     if (dadosApi && dadosApi.length > 0) {
-      // Mapeia o estoque para a estrutura de equipamento
       lista = dadosApi.map((item, idx) => ({
         id: item.id || String(idx + 1),
         nome: item.nome || `Equipamento ${idx + 1}`,
         modelo: item.tipo || "Modelo Padrão",
-        patrimonio: item.codigo || `PAT-2026-00${idx + 1}`,
-        status: "Em operação",
-        ip: `10.20.3.${10 + idx}`,
+        patrimonio: item.numPatrimonio || item.codigo || `PAT-2026-00${idx + 1}`,
+        status: item.status || "Em operação",
+        ip: item.especificacoes?.ipGerenciamento || `10.20.3.${10 + idx}`,
         mac: `00:1A:2B:3C:4D:${10 + idx}`,
-        localizacao: "Data center · Rack 01",
-        responsavel: "Equipe TI",
+        localizacao: item.localizacao || "Data center · Rack 01",
+        responsavel: item.responsavel || "Equipe TI",
         fabricante: "NetStock",
-        entrada: "01/01/2026 10:00",
+        entrada: item.dataTombamento || "01/01/2026 10:00",
         historico: []
       }));
     }
@@ -140,7 +120,6 @@ async function carregarDetalhesEquipamento() {
     console.warn('Usando dados locais de equipamentos.');
   }
 
-  // Preenche o Select da tela de Equipamento
   if (selectEquipamento) {
     selectEquipamento.innerHTML = lista.map((item, index) => 
       `<option value="${item.id}" ${index === 0 ? 'selected' : ''}>
@@ -182,7 +161,6 @@ async function carregarDetalhesEquipamento() {
     };
   }
 
-  // Formulário de Histórico / Eventos
   const formEvento = document.getElementById('form-evento');
   if (formEvento) {
     formEvento.onsubmit = (e) => {
@@ -248,7 +226,6 @@ async function carregarManutencao() {
   const formModal = document.getElementById('form-novo-chamado');
   const selectEquipamentoModal = document.getElementById('m-eqp');
 
-  // Preenche seletor de equipamentos do Modal vindo do estoque
   try {
     const dadosEqp = await buscarRecurso('estoque').catch(() => []);
     if (selectEquipamentoModal && dadosEqp.length > 0) {
@@ -266,24 +243,7 @@ async function carregarManutencao() {
     console.warn('Usando equipamentos padrão para o modal.');
   }
 
-  let chamados = [
-    {
-      id: "m1",
-      equipamento: "Servidor SV-031",
-      descricao: "Falha intermitente de armazenamento · Data center / Rack 01",
-      status: "Alta prioridade",
-      tipoStatus: "alta",
-      icone: "!"
-    },
-    {
-      id: "m2",
-      equipamento: "Switch SW-017",
-      descricao: "Substituição de fonte de energia · Filial Norte / Rack 02",
-      status: "Aguardando peça",
-      tipoStatus: "alerta",
-      icone: "◷"
-    }
-  ];
+  let chamados = [];
 
   try {
     const dadosApi = await buscarRecurso('manutencao').catch(() => null);
@@ -372,4 +332,71 @@ async function carregarManutencao() {
   };
 
   renderizarFila();
+}
+
+/* ==========================================================================
+   4. NOVA TELA: TOMBAMENTO DE ATIVOS (tombamento.html)
+   ========================================================================== */
+async function carregarTombamento() {
+  const containerTabela = document.getElementById('tabela-tombamento-body');
+  const formTombamento = document.getElementById('form-tombamento');
+
+  async function atualizarLista() {
+    const equipamentos = await buscarRecurso('equipamentos').catch(() => []);
+    const ativos = equipamentos.filter(e => e.status !== 'Obsoleto' && e.status !== 'Descarte');
+    renderizarTabelaTombamento(ativos, containerTabela, aoMoverParaDescarte);
+  }
+
+  async function aoMoverParaDescarte(item) {
+    if (confirm(`Mover o ativo "${item.nome}" (${item.numPatrimonio}) para o Almoxarifado / Obsoletos?`)) {
+      await atualizarRecurso('equipamentos', item.id, { status: 'Obsoleto', localizacao: 'Almoxarifado' });
+      atualizarLista();
+    }
+  }
+
+  if (formTombamento) {
+    formTombamento.onsubmit = async (e) => {
+      e.preventDefault();
+      const novoAtivo = {
+        id: `EQP-${Date.now()}`,
+        numPatrimonio: `PAT-${Math.floor(100000 + Math.random() * 900000)}`,
+        nome: document.getElementById('t-nome')?.value || 'Equipamento',
+        tipo: document.getElementById('t-tipo')?.value || 'Rede',
+        localizacao: document.getElementById('t-local')?.value || 'Data Center',
+        responsavel: document.getElementById('t-resp')?.value || 'TI',
+        dataTombamento: new Date().toISOString().split('T')[0],
+        status: 'Ativo'
+      };
+
+      await criarRecurso('equipamentos', novoAtivo);
+      formTombamento.reset();
+      atualizarLista();
+      alert('Equipamento tombado e etiquetado com sucesso!');
+    };
+  }
+
+  atualizarLista();
+}
+
+/* ==========================================================================
+   5. NOVA TELA: GESTÃO DE OBSOLESCÊNCIA E DESCARTE (descarte.html)
+   ========================================================================== */
+async function carregarDescarte() {
+  const containerPainel = document.getElementById('container-painel-descarte');
+
+  async function atualizarPainel() {
+    const equipamentos = await buscarRecurso('equipamentos').catch(() => []);
+    const obsoletos = equipamentos.filter(e => e.status === 'Obsoleto');
+    renderizarPainelDescarte(obsoletos, containerPainel, aoProcessarDestino);
+  }
+
+  async function aoProcessarDestino(id, destinoFinal) {
+    if (confirm(`Confirmar baixa e destinação final como: ${destinoFinal}?`)) {
+      await atualizarRecurso('equipamentos', id, { status: destinoFinal });
+      atualizarPainel();
+      alert(`Equipamento atualizado para: ${destinoFinal}`);
+    }
+  }
+
+  atualizarPainel();
 }

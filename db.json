@@ -15,7 +15,23 @@
       "id": "885kGOaJcds"
     }
   ],
-  "equipamentos": [],
+  "equipamentos": [
+    {
+      "id": "EQP-2026-001",
+      "numPatrimonio": "PAT-884920",
+      "nome": "Switch Cisco Catalyst 2960",
+      "tipo": "Switch",
+      "precoVenda": 1200,
+      "localizacao": "Rack 02 - Data Center Bloco B",
+      "responsavel": "Wellington Silva",
+      "dataTombamento": "2026-03-15",
+      "status": "Ativo",
+      "especificacoes": {
+        "portas": "24 GbE",
+        "ipGerenciamento": "10.0.156.1"
+      }
+    }
+  ],
   "manutencao": [
     {
       "id": "m1",
