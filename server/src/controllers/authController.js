@@ -15,6 +15,43 @@ const loginSchema = z.object({
   senha: z.string().min(1, 'Informe a senha')
 });
 
+// Função auxiliar de validação estrita de política de senha
+function validarForcaSenha(senha, nome, dataNasc) {
+  if (!senha || senha.length < 8) {
+    return 'A nova senha deve ter no mínimo 8 caracteres.';
+  }
+
+  const temLetra = /[a-zA-Z]/.test(senha);
+  const temNumero = /[0-9]/.test(senha);
+  const temEspecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(senha);
+
+  if (!temLetra || !temNumero || !temEspecial) {
+    return 'A nova senha deve conter letras, números e pelo menos um caractere especial (!@#$%...).';
+  }
+
+  if (nome && nome.trim().length > 2) {
+    const partesNome = nome.toLowerCase().trim().split(' ');
+    for (const p of partesNome) {
+      if (p.length > 2 && senha.toLowerCase().includes(p)) {
+        return 'A nova senha não pode conter seu nome ou partes dele.';
+      }
+    }
+  }
+
+  if (dataNasc) {
+    const dataStr = String(dataNasc);
+    const partes = dataStr.includes('-') ? dataStr.split('-') : (dataStr.includes('/') ? dataStr.split('/') : []);
+    for (const p of partes) {
+      if (p && p.length >= 2 && senha.includes(p)) {
+        return 'A nova senha não pode conter seu dia, mês ou ano de nascimento.';
+      }
+    }
+  }
+
+  return null; // Senha aprovada
+}
+
+// 1. Registro de Usuários
 async function registrar(req, res, next) {
   try {
     const dados = registerSchema.parse(req.body);
@@ -22,6 +59,11 @@ async function registrar(req, res, next) {
     const usuarioExiste = await prisma.usuario.findUnique({ where: { email: dados.email } });
     if (usuarioExiste) {
       return res.status(400).json({ error: 'E-mail já cadastrado no sistema.' });
+    }
+
+    const erroSenha = validarForcaSenha(dados.senha, dados.nome, req.body.dataNascimento);
+    if (erroSenha) {
+      return res.status(400).json({ error: erroSenha });
     }
 
     const senhaHash = await bcrypt.hash(dados.senha, 10);
@@ -42,6 +84,7 @@ async function registrar(req, res, next) {
   }
 }
 
+// 2. Login
 async function login(req, res, next) {
   try {
     const { email, senha } = loginSchema.parse(req.body);
@@ -73,6 +116,7 @@ async function login(req, res, next) {
   }
 }
 
+// 3. Perfil do Usuário Logado
 async function perfil(req, res, next) {
   try {
     const usuario = await prisma.usuario.findUnique({
@@ -85,4 +129,49 @@ async function perfil(req, res, next) {
   }
 }
 
-module.exports = { registrar, login, perfil };
+// 4. Alteração Rígida de Senha com Validação de Hash e Política Estrita de Segurança
+async function alterarSenha(req, res, next) {
+  try {
+    const { email, senhaAtual, novaSenha } = req.body;
+
+    if (!email || !senhaAtual || !novaSenha) {
+      return res.status(400).json({ error: 'E-mail, senha atual e nova senha são obrigatórios.' });
+    }
+
+    // Busca o usuário no banco PostgreSQL
+    const usuario = await prisma.usuario.findUnique({ where: { email } });
+    if (!usuario) {
+      return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+
+    // Valida se a Senha Atual bate com o Hash
+    const senhaCorreta = await bcrypt.compare(senhaAtual, usuario.senha);
+    if (!senhaCorreta) {
+      return res.status(400).json({ error: 'A senha atual informada está incorreta.' });
+    }
+
+    // Aplica a Política Estrita de Segurança à Nova Senha
+    const erroForca = validarForcaSenha(novaSenha, usuario.nome, usuario.dataNascimento);
+    if (erroForca) {
+      return res.status(400).json({ error: erroForca });
+    }
+
+    // Criptografa a Nova Senha e salva no PostgreSQL
+    const novohash = await bcrypt.hash(novaSenha, 10);
+    await prisma.usuario.update({
+      where: { email },
+      data: { senha: novohash }
+    });
+
+    return res.status(200).json({ message: 'Senha alterada com sucesso!' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = {
+  registrar,
+  login,
+  perfil,
+  alterarSenha
+};

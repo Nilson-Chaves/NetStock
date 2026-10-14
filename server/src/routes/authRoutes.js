@@ -32,5 +32,6 @@ router.post('/login', authController.login);
  *       - bearerAuth: []
  */
 router.get('/me', authMiddleware, authController.perfil);
+router.put('/alterar-senha', authController.alterarSenha);
 
 module.exports = router;
