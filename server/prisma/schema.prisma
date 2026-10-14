@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        String   @id @default(uuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  cargo     String   @default("Administrador")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  historicos HistoricoMovimentacao[]
+
+  @@map("usuarios")
+}
+
+model Equipamento {
+  id             String   @id @default(uuid())
+  numPatrimonio  String   @unique
+  codigo         String   @unique
+  nome           String
+  tipo           String
+  localizacao    String
+  responsavel    String
+  precoVenda     Float    @default(0.0)
+  status         String   @default("Ativo")
+  dataTombamento String
+  dataBaixa      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  manutencoes Manutencao[]
+  historicos  HistoricoMovimentacao[]
+
+  @@map("equipamentos")
+}
+
+model Manutencao {
+  id              String       @id @default(uuid())
+  equipamentoId   String?
+  equipamento     Equipamento? @relation(fields: [equipamentoId], references: [id], onDelete: SetNull)
+  nomeEquipamento String
+  descricao       String
+  status          String       @default("Alta prioridade")
+  tipoStatus      String       @default("alta")
+  icone           String       @default("!")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("manutencoes")
+}
+
+model HistoricoMovimentacao {
+  id            String      @id @default(uuid())
+  equipamentoId String
+  equipamento   Equipamento @relation(fields: [equipamentoId], references: [id], onDelete: Cascade)
+  usuarioId     String?
+  usuario       Usuario?    @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  titulo        String
+  descricao     String
+  data          DateTime    @default(now())
+
+  @@map("historicos_movimentacao")
+}
