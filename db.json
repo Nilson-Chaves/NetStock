@@ -19,6 +19,7 @@
     {
       "id": "EQP-2026-001",
       "numPatrimonio": "PAT-884920",
+      "codigo": "COD-8849",
       "nome": "Switch Cisco Catalyst 2960",
       "tipo": "Switch",
       "precoVenda": 1200,
@@ -30,32 +31,54 @@
         "portas": "24 GbE",
         "ipGerenciamento": "10.0.156.1"
       }
+    },
+    {
+      "id": "_zvuAxxraEI",
+      "numPatrimonio": "PAT-869169",
+      "codigo": "COD-8691",
+      "nome": "Switch Cisco Core 3850",
+      "tipo": "Switch",
+      "precoVenda": 3500,
+      "localizacao": "Rack 01 - Data Center",
+      "responsavel": "Nilson",
+      "dataTombamento": "2026-10-13",
+      "status": "Ativo"
+    },
+    {
+      "id": "OKlW4Dqf85Q",
+      "numPatrimonio": "PAT-701100",
+      "codigo": "COD-7011",
+      "nome": "roteador teste",
+      "tipo": "roteador",
+      "precoVenda": 200,
+      "localizacao": "Almoxarifado",
+      "responsavel": "Equipe TI",
+      "dataTombamento": "2026-10-13",
+      "status": "Canibalizado (Peças Reaproveitadas)",
+      "dataBaixa": "13/10/2026 20:56"
+    },
+    {
+      "id": "885kGOaJcds",
+      "numPatrimonio": "PAT-769100",
+      "codigo": "COD-7691",
+      "nome": "switch teste",
+      "tipo": "switch",
+      "precoVenda": 1000,
+      "localizacao": "Almoxarifado",
+      "responsavel": "Equipe TI",
+      "dataTombamento": "2026-10-13",
+      "status": "Reciclado (E-Waste)",
+      "dataBaixa": "13/10/2026 20:52"
     }
   ],
   "manutencao": [
     {
-      "id": "m1",
-      "equipamento": "Servidor SV-031",
-      "descricao": "Falha intermitente de armazenamento · Data center / Rack 01",
-      "status": "Alta prioridade",
-      "tipoStatus": "alta",
-      "icone": "!"
-    },
-    {
-      "id": "m3",
-      "equipamento": "Access point AP-072",
-      "descricao": "Atualização de firmware programada · Bloco B / Sala 14",
-      "status": "Agendado",
-      "tipoStatus": "ok",
-      "icone": "◷"
-    },
-    {
-      "id": "4L4Fn_QqSIQ",
-      "equipamento": "roteador",
+      "equipamento": "Switch Cisco Core 3850",
       "descricao": "sem funcionar",
       "status": "Alta prioridade",
       "tipoStatus": "alta",
-      "icone": "!"
+      "icone": "!",
+      "id": "FUvi25X0RzY"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

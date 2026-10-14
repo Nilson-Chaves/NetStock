@@ -16,8 +16,7 @@
       <div class="nav-label">Workspace</div>
       <nav class="nav" aria-label="Navegação principal">
         <a href="index.html"><span class="icon">◈</span>Dashboard</a>
-        <a href="inventario.html"><span class="icon">▦</span>Inventário</a>
-        <a href="tombamento.html"><span class="icon">🏷</span>Tombamento</a>
+        <a href="inventario.html"><span class="icon">▦</span>Inventário & Patrimônio</a>
         <a href="equipamento.html"><span class="icon">⌁</span>Equipamento</a>
         <a href="manutencao.html"><span class="icon">◷</span>Manutenção</a>
         <a class="active" href="descarte.html"><span class="icon">♻</span>Descarte / Reuso</a>
@@ -38,12 +37,29 @@
         </div>
       </header>
 
-      <section class="panel panel-padded">
-        <div class="panel-header">
-          <h2>Itens no Almoxarifado aguardando destinação</h2>
-        </div>
-        <div id="container-painel-descarte" style="margin-top: 16px;"></div>
-      </section>
+      <div class="grid equal-col">
+        <!-- Fila de Espera no Almoxarifado -->
+        <section class="panel panel-padded">
+          <div class="panel-header">
+            <h2>Pendente de Destinação</h2>
+            <span class="subtitle">Itens obsoletos no almoxarifado</span>
+          </div>
+          <div id="container-painel-descarte" style="margin-top: 16px;">
+            <!-- Renderizado via JS -->
+          </div>
+        </section>
+
+        <!-- Histórico e Registro de Baixas/Descartes -->
+        <section class="panel panel-padded">
+          <div class="panel-header">
+            <h2>Histórico de Descartes e Reuso</h2>
+            <span class="subtitle">Ativos baixados e destinados</span>
+          </div>
+          <div id="container-historico-descarte" class="grid" style="margin-top: 16px;">
+            <!-- Renderizado via JS -->
+          </div>
+        </section>
+      </div>
     </main>
   </div>
 

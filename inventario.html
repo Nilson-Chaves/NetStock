@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inventário | NetStock</title>
+  <title>Inventário & Tombamento | NetStock</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -16,8 +16,7 @@
       <div class="nav-label">Workspace</div>
       <nav class="nav" aria-label="Navegação principal">
         <a href="index.html"><span class="icon">◈</span>Dashboard</a>
-        <a class="active" href="inventario.html"><span class="icon">▦</span>Inventário</a>
-        <a href="tombamento.html"><span class="icon">🏷</span>Tombamento</a>
+        <a class="active" href="inventario.html"><span class="icon">▦</span>Inventário & Patrimônio</a>
         <a href="equipamento.html"><span class="icon">⌁</span>Equipamento</a>
         <a href="manutencao.html"><span class="icon">◷</span>Manutenção</a>
         <a href="descarte.html"><span class="icon">♻</span>Descarte / Reuso</a>
@@ -28,9 +27,9 @@
     <main class="main">
       <header class="topbar">
         <div>
-          <div class="eyebrow">Ativos de rede</div>
-          <h1>Inventário</h1>
-          <p class="subtitle">Equipamentos cadastrados na infraestrutura.</p>
+          <div class="eyebrow">GESTÃO DE ATIVOS</div>
+          <h1>Inventário & Tombamento</h1>
+          <p class="subtitle">Equipamentos cadastrados, tombados e monitorados na infraestrutura.</p>
         </div>
         <div class="user-chip">
           <span>Administradora</span>
@@ -38,30 +37,51 @@
         </div>
       </header>
 
-      <form id="form-produto" class="form-cadastro-inline">
+      <!-- Formulário Inline com Seleção Padronizada de Tipo/Categoria -->
+      <form id="form-produto" class="form-cadastro-inline" style="flex-wrap: wrap; gap: 10px;">
         <input type="text" id="nome" placeholder="Nome do equipamento" required class="form-input flex-1">
-        <input type="text" id="categoria" placeholder="Tipo (ex: Switch, Roteador)" required class="form-input flex-1">
-        <input type="number" id="preco" placeholder="Valor / Preço (R$)" required class="form-input w-140">
-        <button type="submit" class="btn-primary">+ Cadastrar Ativo</button>
+        
+        <!-- Menu Suspenso de Categoria Padronizada -->
+        <select id="categoria" required class="form-input flex-1" style="background-color: #fff;">
+          <option value="" disabled selected>Selecione o Tipo/Categoria...</option>
+          <option value="Switch">Switch</option>
+          <option value="Roteador">Roteador</option>
+          <option value="Firewall">Firewall</option>
+          <option value="Access Point">Access Point</option>
+          <option value="Servidor">Servidor</option>
+          <option value="Patch Panel">Patch Panel</option>
+          <option value="Nobreak / UPS">Nobreak / UPS</option>
+          <option value="Modem / OLT">Modem / OLT</option>
+          <option value="Outros">Outros</option>
+        </select>
+
+        <input type="text" id="localizacao" placeholder="Localização (ex: Rack 02)" required class="form-input flex-1">
+        <input type="text" id="responsavel" placeholder="Responsável Técnico" required class="form-input flex-1">
+        <input type="number" id="preco" placeholder="Valor (R$)" required class="form-input w-140">
+        <button type="submit" class="btn-primary">+ Tombar / Cadastrar</button>
       </form>
 
       <section class="panel">
         <div class="panel-header">
-          <h2>Todos os equipamentos</h2>
-          <span class="subtitle">Atualizado agora</span>
+          <h2>Ativos em Operação</h2>
+          <span class="subtitle">Lista unificada de patrimônio</span>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Código / ID</th>
+                <th>Patrimônio / Código</th>
                 <th>Equipamento</th>
                 <th>Tipo</th>
-                <th>Preço / Valor</th>
+                <th>Localização</th>
+                <th>Responsável</th>
+                <th>Valor</th>
                 <th>Ações</th>
               </tr>
             </thead>
-            <tbody id="tabela-produtos-body"></tbody>
+            <tbody id="tabela-produtos-body">
+              <!-- Renderizado via JavaScript -->
+            </tbody>
           </table>
         </div>
       </section>
