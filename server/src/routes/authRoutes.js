@@ -1,37 +1,15 @@
-const { Router } = require('express');
+const express = require('express');
+const router = express.Router();
 const authController = require('../controllers/authController');
-const authMiddleware = require('../middlewares/authMiddleware');
 
-const router = Router();
-
-/**
- * @swagger
- * /api/auth/register:
- *   post:
- *     summary: Cadastrar novo usuário
- *     tags: [Autenticação]
- */
-router.post('/register', authController.registrar);
-
-/**
- * @swagger
- * /api/auth/login:
- *   post:
- *     summary: Autenticar usuário e obter JWT Token
- *     tags: [Autenticação]
- */
+router.post('/registrar', authController.registrar);
 router.post('/login', authController.login);
-
-/**
- * @swagger
- * /api/auth/me:
- *   get:
- *     summary: Obter perfil do usuário autenticado
- *     tags: [Autenticação]
- *     security:
- *       - bearerAuth: []
- */
-router.get('/me', authMiddleware, authController.perfil);
+router.get('/perfil', authController.perfil);
 router.put('/alterar-senha', authController.alterarSenha);
+
+// Rotas de Gestão de Equipe e Permissões
+router.get('/usuarios', authController.listarUsuarios);
+router.put('/usuarios/:id/permissao', authController.atualizarPermissaoUsuario);
+router.delete('/usuarios/:id', authController.deletarUsuario);
 
 module.exports = router;

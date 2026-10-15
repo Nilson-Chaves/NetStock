@@ -18,7 +18,12 @@ async function listar(req, res, next) {
   try {
     const equipamentos = await prisma.equipamento.findMany({
       orderBy: { createdAt: 'desc' },
-      include: { manutencoes: true, historicos: true }
+      include: { 
+        manutencoes: true, 
+        historicos: {
+          include: { usuario: true }
+        } 
+      }
     });
     return res.json(equipamentos);
   } catch (error) {
@@ -31,7 +36,12 @@ async function buscarPorId(req, res, next) {
     const { id } = req.params;
     const equipamento = await prisma.equipamento.findUnique({
       where: { id },
-      include: { manutencoes: true, historicos: true }
+      include: { 
+        manutencoes: true, 
+        historicos: {
+          include: { usuario: true }
+        } 
+      }
     });
     if (!equipamento) {
       return res.status(404).json({ error: 'Equipamento não encontrado' });
