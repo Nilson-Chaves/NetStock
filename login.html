@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Acesso Restrito | NetStock</title>
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      background: #0f172a;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .auth-card {
+      background: #1e293b;
+      border: 1px solid rgba(0, 210, 255, 0.25);
+      border-radius: 12px;
+      padding: 32px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    }
+    .auth-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .auth-brand img {
+      width: 42px;
+      height: 42px;
+    }
+    .auth-brand h2 {
+      margin: 0;
+      font-size: 1.4rem;
+      color: #fff;
+    }
+    .auth-brand span {
+      display: block;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+    .form-input-login {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: #0f172a;
+      color: #fff;
+      box-sizing: border-box;
+      font-size: 0.9rem;
+    }
+    .btn-login-submit {
+      width: 100%;
+      padding: 12px;
+      border-radius: 6px;
+      border: none;
+      background: #00d2ff;
+      color: #0f172a;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-login-submit:hover {
+      background: #00b8e6;
+    }
+    .notice-box {
+      margin-top: 20px;
+      padding: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      text-align: center;
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="auth-card">
+    <div class="auth-brand">
+      <img src="logo.svg" alt="NetStock Logo">
+      <div>
+        <h2>NetStock</h2>
+        <span>Acesso Restrito à Infraestrutura</span>
+      </div>
+    </div>
+
+    <form id="form-login-publico">
+      <div class="form-group">
+        <label for="login-email">E-mail Corporativo *</label>
+        <input type="email" id="login-email" class="form-input-login" required placeholder="seu.email@empresa.com">
+      </div>
+
+      <div class="form-group">
+        <label for="login-senha">Senha de Acesso *</label>
+        <div style="position: relative; display: flex; align-items: center;">
+          <input type="password" id="login-senha" class="form-input-login" required placeholder="••••••••" style="padding-right: 75px;">
+          <button type="button" onclick="togglePasswordLogin('login-senha', this)" style="position: absolute; right: 8px; background: none; border: none; color: #00d2ff; cursor: pointer; font-size: 0.8rem;">👁 Ver</button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login-submit" style="margin-top: 10px;">Entrar no Sistema</button>
+    </form>
+
+    <div class="notice-box">
+      🔒 <strong>Acesso Protegido:</strong> O cadastro de novos técnicos e colaboradores é realizado exclusivamente pelos Administradores do sistema.
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    function togglePasswordLogin(id, btn) {
+      const field = document.getElementById(id);
+      if (!field) return;
+      if (field.type === 'password') {
+        field.type = 'text';
+        btn.innerText = '🙈 Ocultar';
+      } else {
+        field.type = 'password';
+        btn.innerText = '👁 Ver';
+      }
+    }
+
+    document.getElementById('form-login-publico').addEventListener('submit', async (evt) => {
+      evt.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const senha = document.getElementById('login-senha').value;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, senha })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          throw new Error(data.error || 'E-mail ou senha incorretos.');
+        }
+
+        salvarSessaoUsuario(data.token, data.usuario);
+        alert(`✅ Bem-vindo de volta, ${data.usuario.nome || 'Administrador'}!`);
+        window.location.href = 'index.html';
+      } catch (err) {
+        alert('❌ Falha na autenticação: ' + err.message);
+      }
+    });
+  </script>
+</body>
+</html>

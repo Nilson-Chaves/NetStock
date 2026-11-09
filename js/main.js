@@ -469,3 +469,49 @@ async function carregarDescarte() {
 
   atualizarPainelEHistorico();
 }
+/* Função para alternar o campo de texto ao selecionar "Outros" */
+function tratarSelecaoDefeito(valor) {
+  const containerOutro = document.getElementById('container-campo-outro-defeito');
+  const inputOutro = document.getElementById('chamado-defeito-outro-input');
+
+  if (valor === 'Outros') {
+    containerOutro.style.display = 'block';
+    inputOutro.required = true;
+    inputOutro.focus();
+  } else {
+    containerOutro.style.display = 'none';
+    inputOutro.required = false;
+    inputOutro.value = '';
+  }
+}
+
+/* Evento de Envio do Formulário de Manutenção */
+document.getElementById('form-abrir-chamado').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const idEquipamento = document.getElementById('chamado-equipamento-select').value;
+  const defeitoSelect = document.getElementById('chamado-defeito-select').value;
+  const defeitoOutro = document.getElementById('chamado-defeito-outro-input').value.trim();
+  const moverBancada = document.getElementById('chk-transferencia-auto').checked;
+
+  if (!idEquipamento) {
+    alert('⚠️ Por favor, selecione um equipamento.');
+    return;
+  }
+
+  // Define a descrição final do defeito
+  const descricaoDefeito = (defeitoSelect === 'Outros') ? `Outros: ${defeitoOutro}` : defeitoSelect;
+
+  try {
+    await criarChamadoManutencao({
+      equipamentoId: idEquipamento,
+      defeito: descricaoDefeito,
+      moverParaBancada: moverBancada
+    });
+
+    alert('✅ Chamado de manutenção aberto com sucesso!');
+    location.reload();
+  } catch (err) {
+    alert('❌ Erro ao abrir chamado: ' + err.message);
+  }
+});

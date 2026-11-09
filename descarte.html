@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Descarte & Reuso | NetStock</title>
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -32,19 +33,18 @@
           <p class="subtitle">Destinação sustentável de equipamentos inativos (Canibalização ou Reciclagem).</p>
         </div>
         <div class="user-chip">
-          <span>Administradora</span>
-          <span class="avatar">MC</span>
+          <!-- Carregado via JS com o usuário autenticado -->
         </div>
       </header>
 
-      <div class="grid equal-col">
-        <!-- Fila de Espera no Almoxarifado -->
+      <div class="grid two-col">
+        <!-- Pendente de Destinação -->
         <section class="panel panel-padded">
           <div class="panel-header">
             <h2>Pendente de Destinação</h2>
-            <span class="subtitle">Itens obsoletos no almoxarifado</span>
+            <span class="subtitle">Itens em análise no almoxarifado</span>
           </div>
-          <div id="container-painel-descarte" style="margin-top: 16px;">
+          <div id="container-painel-descarte" style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">
             <!-- Renderizado via JS -->
           </div>
         </section>
@@ -52,10 +52,10 @@
         <!-- Histórico e Registro de Baixas/Descartes -->
         <section class="panel panel-padded">
           <div class="panel-header">
-            <h2>Histórico de Descartes e Reuso</h2>
-            <span class="subtitle">Ativos baixados e destinados</span>
+            <h2>Histórico de Ativos Destinados / Reaproveitados</h2>
+            <span class="subtitle">Ações concluídas</span>
           </div>
-          <div id="container-historico-descarte" class="grid" style="margin-top: 16px;">
+          <div id="container-historico-descarte" style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">
             <!-- Renderizado via JS -->
           </div>
         </section>
@@ -63,6 +63,89 @@
     </main>
   </div>
 
-  <script type="module" src="./js/main.js"></script>
+  <script src="js/api.js"></script>
+
+  <script>
+    async function carregarDescarte() {
+      try {
+        if (typeof atualizarUserChip === 'function') atualizarUserChip();
+
+        const equipamentos = await obterTodosEquipamentos();
+        const pendentesContainer = document.getElementById('container-painel-descarte');
+        const historicoContainer = document.getElementById('container-historico-descarte');
+
+        if (!equipamentos || equipamentos.length === 0) {
+          pendentesContainer.innerHTML = '<p class="subtitle">Nenhum equipamento cadastrado no sistema.</p>';
+          historicoContainer.innerHTML = '<p class="subtitle">Nenhum histórico disponível.</p>';
+          return;
+        }
+
+        // Filtro Corrigido: Exibe apenas os itens estritamente 'Obsoleto' na aba de pendentes de destinação
+        const pendentes = equipamentos.filter(e => e.status === 'Obsoleto');
+        const destinados = equipamentos.filter(e => e.status === 'Ativo' || e.status === 'Descartado' || e.status === 'Reaproveitado');
+
+        if (pendentes.length === 0) {
+          pendentesContainer.innerHTML = '<p class="subtitle">Nenhum equipamento aguardando destinação no momento.</p>';
+        } else {
+          pendentesContainer.innerHTML = pendentes.map(e => `
+            <div style="padding: 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">
+              <strong>${e.nome}</strong> (${e.numPatrimonio || e.codigo})
+              <p class="subtitle" style="font-size: 0.85rem; margin: 4px 0 10px 0;">Status Atual: <span class="badge bg-warning">${e.status}</span> | Local: ${e.localizacao}</p>
+              
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn btn-sm" style="background-color: #28a745; color: #ffffff; border: none; font-family: inherit; font-weight: 500; cursor: pointer; padding: 6px 12px; border-radius: 4px;" onclick="alterarDestino('${e.id}', 'Ativo', 'Reativado e retornado ao inventário')">Reativar (Voltar a Operação)</button>
+                <button class="btn btn-sm" style="background-color: #2092a9; color: #ffffff; border: none; font-family: inherit; font-weight: 500; cursor: pointer; padding: 6px 12px; border-radius: 4px;" onclick="alterarDestino('${e.id}', 'Reaproveitado', 'Peças reaproveitadas/canibalizadas')">Reaproveitar Peças</button>
+                <button class="btn btn-sm" style="background-color: #dc3545; color: #ffffff; border: none; font-family: inherit; font-weight: 500; cursor: pointer; padding: 6px 12px; border-radius: 4px;" onclick="alterarDestino('${e.id}', 'Descartado', 'Enviado para reciclagem eletrônica')">Confirmar Descarte</button>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        historicoContainer.innerHTML = destinados.map(e => `
+          <div style="padding: 10px; border-left: 3px solid ${e.status === 'Ativo' ? '#28a745' : (e.status === 'Reaproveitado' ? '#2092a9' : '#dc3545')};">
+            <strong>${e.nome}</strong> (${e.numPatrimonio || e.codigo})
+            <p class="subtitle" style="font-size: 0.85rem;">Situação: <strong>${e.status}</strong> | Resp: ${e.responsavel || '-'}</p>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        console.error('Erro ao carregar área de descarte:', err);
+      }
+    }
+    
+    async function alterarDestino(id, novoStatus, mensagem) {
+      if (!confirm(`Confirma a alteração do status para "${novoStatus}"?`)) return;
+
+      try {
+        const token = localStorage.getItem('netstock_token') || '';
+        const payload = { status: novoStatus };
+
+        // Se estiver reativando o equipamento, solicita a sala/localização de destino
+        if (novoStatus === 'Ativo') {
+          const novaLocal = prompt('Informe a localização/sala para onde o equipamento será alocado:', 'Rack 02');
+          if (novaLocal === null) return; // Cancelou a ação
+          payload.localizacao = novaLocal.trim() || 'Almoxarifado Central';
+        }
+
+        const res = await fetch(`${API_BASE_URL}/equipamentos/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error('Falha ao atualizar o equipamento no servidor.');
+
+        alert(`✅ Status atualizado com sucesso: ${mensagem}`);
+        carregarDescarte();
+      } catch (err) {
+        alert('❌ Erro ao atualizar status: ' + err.message);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', carregarDescarte);
+  </script>
 </body>
 </html>

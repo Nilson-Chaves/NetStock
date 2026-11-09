@@ -3,8 +3,93 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Detalhes | NetStock</title>
+  <title>Gerenciar Equipamento | NetStock</title>
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Estilização Padrão NetStock */
+    .form-grid-netstock {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .form-group-netstock {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group-netstock label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #64748b;
+      letter-spacing: 0.02em;
+    }
+
+    .form-group-netstock input,
+    .form-group-netstock select {
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background-color: #ffffff;
+      color: #0f172a;
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    /* Estilo para campos bloqueados/apenas leitura */
+    .form-group-netstock input[readonly],
+    .form-group-netstock select[disabled] {
+      background-color: #f1f5f9;
+      color: #64748b;
+      border-color: #e2e8f0;
+      cursor: not-allowed;
+      opacity: 0.9;
+    }
+
+    /* Destaque especial apenas para o campo de Localização (Editável) */
+    .form-group-netstock input#eq-localizacao {
+      border: 2px solid #0284c7;
+      background-color: #ffffff;
+    }
+
+    .form-group-netstock input#eq-localizacao:focus {
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
+    }
+
+    .selector-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      padding: 18px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .selector-banner label {
+      display: block;
+      font-size: 0.85rem;
+      color: #38bdf8;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .selector-banner select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background-color: #0f172a;
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-family: inherit;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
   <div class="app-shell">
@@ -27,79 +112,188 @@
     <main class="main">
       <header class="topbar">
         <div>
-          <div class="eyebrow" id="breadcrumb">INVENTÁRIO / EQUIPAMENTO</div>
-          <h1>Detalhes do ativo</h1>
-          <p class="subtitle">Registro técnico e histórico de movimentações.</p>
+          <div class="eyebrow">CADASTRO E EDIÇÃO</div>
+          <h1>Gerenciar Equipamento</h1>
+          <p class="subtitle">Selecione o ativo para consultar dados ou alterar sua alocação de sala.</p>
         </div>
-        
-        <div class="topbar-actions">
-          <label for="select-equipamento" class="stat-label">Selecionar Ativo:</label>
-          <select id="select-equipamento" class="form-input">
-            <option value="">Carregando equipamentos...</option>
-          </select>
-          <div class="user-chip">
-            <span>Administradora</span>
-            <span class="avatar">MC</span>
-          </div>
+        <div class="user-chip">
+          <!-- Preenchido via JS com os dados do usuário autenticado -->
         </div>
       </header>
 
-      <div class="grid equal-col">
-        <!-- Card de Informações -->
-        <section class="panel panel-padded">
-          <h2 id="eqp-nome" class="eqp-title">Carregando...</h2>
-          <p id="eqp-sub" class="eqp-sub"></p>
-          <span id="eqp-status" class="badge ok">Em operação</span>
+      <section class="panel panel-padded">
+        
+        <!-- Seletor de Equipamentos -->
+        <div class="selector-banner">
+          <label for="select-equipamento-carregar">🔍 Selecionar Equipamento Cadastrado para Alocação/Consulta:</label>
+          <select id="select-equipamento-carregar">
+            <option value="">-- Escolha um equipamento para carregar os dados --</option>
+          </select>
+        </div>
 
-          <hr class="divider">
+        <form id="form-gerenciar-equipamento">
+          <input type="hidden" id="eq-id">
 
-          <div class="eqp-grid">
-            <div>
-              <strong>ENDEREÇO IP</strong>
-              <p id="eqp-ip" class="subtitle">-</p>
+          <div class="form-grid-netstock">
+            <div class="form-group-netstock">
+              <label for="eq-nome">Nome do Equipamento</label>
+              <input type="text" id="eq-nome" readonly placeholder="Carregue um equipamento">
             </div>
-            <div>
-              <strong>MAC ADDRESS</strong>
-              <p id="eqp-mac" class="subtitle">-</p>
+
+            <div class="form-group-netstock">
+              <label for="eq-patrimonio">Código Patrimonial</label>
+              <input type="text" id="eq-patrimonio" readonly placeholder="Carregue um equipamento">
             </div>
-            <div>
-              <strong>LOCALIZAÇÃO</strong>
-              <p id="eqp-loc" class="subtitle">-</p>
+
+            <div class="form-group-netstock">
+              <label for="eq-tipo">Tipo / Categoria</label>
+              <select id="eq-tipo" disabled>
+                <option value="">Selecione...</option>
+                <option value="Switch">Switch</option>
+                <option value="Roteador">Roteador</option>
+                <option value="Firewall">Firewall</option>
+                <option value="Servidor">Servidor</option>
+                <option value="Access Point">Access Point</option>
+                <option value="Cabo / Acessório">Cabo / Acessório</option>
+                <option value="Outros">Outros</option>
+              </select>
             </div>
-            <div>
-              <strong>RESPONSÁVEL</strong>
-              <p id="eqp-resp" class="subtitle">-</p>
+
+            <!-- APENAS ESTE CAMPO É EDITÁVEL -->
+            <div class="form-group-netstock">
+              <label for="eq-localizacao" style="color: #0284c7;">Sala / Localização Atual * (Editável)</label>
+              <input type="text" id="eq-localizacao" required placeholder="Ex: Rack A - Sala de Servidores">
             </div>
-            <div>
-              <strong>FABRICANTE</strong>
-              <p id="eqp-fab" class="subtitle">-</p>
+
+            <div class="form-group-netstock">
+              <label for="eq-responsavel">Responsável Técnico</label>
+              <input type="text" id="eq-responsavel" readonly placeholder="Carregue um equipamento">
             </div>
-            <div>
-              <strong>DATA / HORA ENTRADA</strong>
-              <p id="eqp-entrada" class="subtitle">-</p>
+
+            <div class="form-group-netstock">
+              <label for="eq-valor">Valor Estimado (R$)</label>
+              <input type="text" id="eq-valor" readonly placeholder="R$ 0,00">
+            </div>
+
+            <div class="form-group-netstock">
+              <label for="eq-status">Status Operacional</label>
+              <select id="eq-status" disabled>
+                <option value="Ativo">Ativo</option>
+                <option value="Em Manutenção">Em Manutenção</option>
+                <option value="Obsoleto">Obsoleto</option>
+                <option value="Descartado">Descartado</option>
+                <option value="Reaproveitado">Reaproveitado</option>
+              </select>
             </div>
           </div>
-        </section>
 
-        <!-- Histórico e Eventos -->
-        <section class="panel panel-padded">
-          <h2>Histórico do equipamento</h2>
-
-          <form id="form-evento" class="form-box">
-            <strong>Registrar Novo Evento / Movimentação</strong>
-            <input type="text" id="evt-titulo" placeholder="Título do evento (ex: Troca de Sala)" required class="form-input">
-            <input type="text" id="evt-loc" placeholder="Nova Localização" class="form-input">
-            <input type="text" id="evt-resp" placeholder="Novo Responsável" class="form-input">
-            <input type="text" id="evt-desc" placeholder="Observação / Descrição" required class="form-input">
-            <button type="submit" class="btn-primary">+ Registrar Evento</button>
-          </form>
-
-          <div id="container-historico" class="grid"></div>
-        </section>
-      </div>
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+            <button type="button" class="btn-secondary" onclick="limparFormulario()">Limpar</button>
+            <button type="submit" class="btn-primary" id="btn-salvar-eq">Salvar Nova Localização</button>
+          </div>
+        </form>
+      </section>
     </main>
   </div>
 
-  <script type="module" src="./js/main.js"></script>
+  <script src="js/api.js"></script>
+
+  <script>
+    let equipamentosCadastrados = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (typeof atualizarUserChip === 'function') atualizarUserChip();
+      await carregarDropdownEquipamentos();
+    });
+
+    async function carregarDropdownEquipamentos() {
+      try {
+        equipamentosCadastrados = await obterTodosEquipamentos();
+        const selectElement = document.getElementById('select-equipamento-carregar');
+        
+        selectElement.innerHTML = '<option value="">-- Escolha um equipamento para carregar os dados --</option>';
+
+        if (Array.isArray(equipamentosCadastrados) && equipamentosCadastrados.length > 0) {
+          equipamentosCadastrados.forEach(eq => {
+            const opt = document.createElement('option');
+            opt.value = eq.id;
+            opt.textContent = `${eq.numPatrimonio || eq.codigo || 'PAT'} - ${eq.nome} (${eq.localizacao || 'Sem local'})`;
+            selectElement.appendChild(opt);
+          });
+        }
+      } catch (err) {
+        console.error('Erro ao carregar lista de equipamentos:', err);
+      }
+    }
+
+    // Carrega os dados bloqueando todos os campos exceto Localização
+    document.getElementById('select-equipamento-carregar').addEventListener('change', (e) => {
+      const eqId = e.target.value;
+      if (!eqId) {
+        limparFormulario();
+        return;
+      }
+
+      const eq = equipamentosCadastrados.find(item => String(item.id) === String(eqId));
+      if (eq) {
+        document.getElementById('eq-id').value = eq.id;
+        document.getElementById('eq-nome').value = eq.nome || '';
+        document.getElementById('eq-patrimonio').value = eq.numPatrimonio || eq.codigo || '';
+        document.getElementById('eq-tipo').value = eq.tipo || '';
+        document.getElementById('eq-localizacao').value = eq.localizacao || '';
+        document.getElementById('eq-responsavel').value = eq.responsavel || '';
+        document.getElementById('eq-valor').value = `R$ ${(Number(eq.precoVenda) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        document.getElementById('eq-status').value = eq.status || 'Ativo';
+      }
+    });
+
+    function limparFormulario() {
+      document.getElementById('eq-id').value = '';
+      document.getElementById('select-equipamento-carregar').value = '';
+      document.getElementById('form-gerenciar-equipamento').reset();
+    }
+
+    // Atualiza estritamente a localização no servidor
+    document.getElementById('form-gerenciar-equipamento').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const eqId = document.getElementById('eq-id').value;
+      const novaLocalizacao = document.getElementById('eq-localizacao').value.trim();
+
+      if (!eqId) {
+        alert('⚠️ Selecione um equipamento na lista acima para alterar a localização.');
+        return;
+      }
+
+      if (!novaLocalizacao) {
+        alert('⚠️ Informe a nova sala / localização.');
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('netstock_token') || '';
+
+        const res = await fetch(`${API_BASE_URL}/equipamentos/${eqId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ localizacao: novaLocalizacao })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || errData.message || 'Erro ao atualizar a localização.');
+        }
+
+        alert('✅ Localização/Sala atualizada com sucesso no banco de dados e inventário!');
+        limparFormulario();
+        await carregarDropdownEquipamentos();
+      } catch (err) {
+        alert('❌ Erro: ' + err.message);
+      }
+    });
+  </script>
 </body>
 </html>

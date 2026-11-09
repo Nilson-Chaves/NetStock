@@ -31,13 +31,13 @@
           <h1>Manutenção</h1>
           <p class="subtitle">Acompanhe os ativos que precisam de atenção.</p>
         </div>
+        
         <div class="user-chip">
-          <span>Administradora</span>
-          <span class="avatar">MC</span>
+          <!-- Renderizado com as informações do usuário logado -->
         </div>
       </header>
 
-      <!-- Indicadores do Topo -->
+      <!-- Indicadores Estatísticos Dinâmicos -->
       <section class="grid stats">
         <article class="panel stat">
           <span class="stat-label">Chamados Abertos</span>
@@ -46,18 +46,18 @@
         </article>
         <article class="panel stat">
           <span class="stat-label">Em Atendimento</span>
-          <strong id="stat-atendimento" class="stat-value">04</strong>
-          <span class="stat-detail">3 técnicos ativos</span>
+          <strong id="stat-atendimento" class="stat-value">00</strong>
+          <span id="stat-tecnicos" class="stat-detail">Técnicos ativos</span>
         </article>
         <article class="panel stat">
           <span class="stat-label">Concluídos no Mês</span>
-          <strong id="stat-concluidos" class="stat-value">18</strong>
-          <span class="stat-detail">↑ 12% vs. mês anterior</span>
+          <strong id="stat-concluidos" class="stat-value">00</strong>
+          <span class="stat-detail">Mês atual</span>
         </article>
         <article class="panel stat">
           <span class="stat-label">Tempo Médio</span>
-          <strong class="stat-value">2,4d</strong>
-          <span class="stat-detail">Dentro da meta</span>
+          <strong id="stat-tempo-medio" class="stat-value">0,0d</strong>
+          <span class="stat-detail">Média de resolução</span>
         </article>
       </section>
 
@@ -67,23 +67,45 @@
           <h2>Fila de manutenção</h2>
           <button id="btn-novo-chamado" class="btn-primary">+ Novo registro</button>
         </div>
-        <div id="container-fila-manutencao"></div>
+        <div id="container-fila-manutencao" style="margin-top: 16px;"></div>
       </section>
     </main>
   </div>
 
-  <!-- Modal -->
+  <!-- Modal de Abertura de Chamados -->
   <div id="modal-chamado" class="modal-overlay">
     <div class="modal-card">
       <h2>Abrir Chamado de Manutenção</h2>
       <form id="form-novo-chamado" class="modal-form">
+        
         <label class="stat-label">Equipamento do Inventário:</label>
         <select id="m-eqp" required class="form-input">
           <option value="">A carregar inventário...</option>
         </select>
 
-        <label class="stat-label">Descrição do Problema / Localização:</label>
-        <input type="text" id="m-desc" placeholder="Ex: Falha na fonte · Data center" required class="form-input">
+        <label class="stat-label">Descrição do Problema / Categoria:</label>
+        <select id="m-desc-select" required class="form-input">
+          <option value="">Selecione o tipo de problema...</option>
+          <optgroup label="🌐 Problemas de Rede & Conectividade">
+            <option value="Porta RJ45 / SFP Danificada">Porta RJ45 / SFP Danificada ou Queimada</option>
+            <option value="Perda de Pacotes / Instabilidade">Perda de Pacotes / Instabilidade Severa</option>
+            <option value="Falha no Sinal Wi-Fi / AP">Falha de Autenticação / Sinal Wi-Fi (AP)</option>
+            <option value="Superaquecimento / Ventoinha">Superaquecimento / Barulho na Ventoinha (Fan)</option>
+          </optgroup>
+          <optgroup label="⚙️ Manutenção & Hardware">
+            <option value="Atualização de Firmware / OS">Atualização de Firmware / Sistema Operacional</option>
+            <option value="Troca de Fonte / Alimentação PoE">Troca de Fonte de Alimentação / PoE</option>
+            <option value="Reset de Fábrica / Reconfiguração">Reset de Fábrica / Reconfiguração de VLANs</option>
+            <option value="Troca de Peças / Modulo Transceiver">Troca de Peças / Módulo Transceiver/GBIC</option>
+          </optgroup>
+          <option value="Outros">Outros (Especificar detalhes)...</option>
+        </select>
+
+        <!-- Campo Dinâmico caso selecione Outros -->
+        <div id="container-m-desc-outro" style="display: none; margin-top: 8px;">
+          <label class="stat-label">Especifique o Problema / Observação:</label>
+          <input type="text" id="m-desc-outro-input" placeholder="Digite detalhadamente o problema..." class="form-input">
+        </div>
 
         <label class="stat-label">Prioridade / Estado:</label>
         <select id="m-status" class="form-input">
@@ -92,13 +114,188 @@
           <option value="Agendado|ok|◷">Agendado</option>
         </select>
 
-        <div class="modal-actions">
+        <!-- Checkbox de Transferência Automática com Fonte Limpa -->
+        <div style="margin-top: 14px; margin-bottom: 6px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; font-size: 0.85rem; color: #475569; font-weight: 500;">
+            <input type="checkbox" id="m-mover-bancada" checked style="cursor: pointer;">
+            <span>Transferência Automática: Remover do local atual e mover para <strong style="color: #0f172a;">"Bancada / Sala de Manutenção"</strong>.</span>
+          </label>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 18px;">
           <button type="button" id="btn-fechar-modal" class="btn-secondary">Cancelar</button>
           <button type="submit" class="btn-primary">Salvar Registro</button>
         </div>
       </form>
     </div>
   </div>
+
+  <script src="js/api.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (typeof atualizarUserChip === 'function') atualizarUserChip();
+      await carregarDadosManutencao();
+
+      const btnNovo = document.getElementById('btn-novo-chamado');
+      const btnFechar = document.getElementById('btn-fechar-modal');
+      const modal = document.getElementById('modal-chamado');
+      const selectDefeito = document.getElementById('m-desc-select');
+      const containerOutro = document.getElementById('container-m-desc-outro');
+
+      if (btnNovo) btnNovo.addEventListener('click', () => modal.classList.add('active'));
+      if (btnFechar) btnFechar.addEventListener('click', () => modal.classList.remove('active'));
+
+      if (selectDefeito) {
+        selectDefeito.addEventListener('change', (e) => {
+          if (e.target.value === 'Outros') {
+            containerOutro.style.display = 'block';
+            document.getElementById('m-desc-outro-input').required = true;
+          } else {
+            containerOutro.style.display = 'none';
+            document.getElementById('m-desc-outro-input').required = false;
+          }
+        });
+      }
+    });
+
+    async function carregarDadosManutencao() {
+      try {
+        const [equipamentos, chamados] = await Promise.all([
+          typeof obterTodosEquipamentos === 'function' ? obterTodosEquipamentos() : Promise.resolve([]),
+          typeof obterChamadosManutencao === 'function' ? obterChamadosManutencao() : Promise.resolve([])
+        ]);
+
+        // 1. Carrega opções de equipamentos no Select do Modal
+        const selectEqp = document.getElementById('m-eqp');
+        if (selectEqp && Array.isArray(equipamentos)) {
+          selectEqp.innerHTML = '<option value="">Selecione o equipamento...</option>';
+          const disponiveis = equipamentos.filter(eq => eq.status !== 'Em Manutenção' && eq.status !== 'Obsoleto');
+          
+          disponiveis.forEach(eq => {
+            const opt = document.createElement('option');
+            opt.value = eq.id;
+            opt.textContent = `${eq.numPatrimonio || eq.codigo || 'PAT'} - ${eq.nome} (${eq.localizacao || 'Sem local'})`;
+            selectEqp.appendChild(opt);
+          });
+        }
+
+        // 2. Atualiza indicadores numéricos dos cards
+        if (Array.isArray(chamados)) {
+          const totalAbertos = chamados.length;
+          const altaPrioridade = chamados.filter(c => c.tipoStatus === 'alta' || (c.status && c.status.includes('Alta'))).length;
+          
+          const elAbertos = document.getElementById('stat-abertos');
+          const elPrioridade = document.getElementById('stat-prioridade');
+          const elAtendimento = document.getElementById('stat-atendimento');
+
+          if (elAbertos) elAbertos.textContent = String(totalAbertos).padStart(2, '0');
+          if (elPrioridade) elPrioridade.textContent = `${altaPrioridade} alta prioridade`;
+          if (elAtendimento) elAtendimento.textContent = String(totalAbertos).padStart(2, '0');
+        }
+
+        // 3. Renderiza a Fila de Manutenção na div do painel
+        const containerFila = document.getElementById('container-fila-manutencao');
+        if (containerFila) {
+          if (!chamados || chamados.length === 0) {
+            containerFila.innerHTML = `
+              <div style="padding: 24px; text-align: center; color: #64748b; font-size: 0.9rem;">
+                Nenhum chamado de manutenção em andamento no momento.
+              </div>
+            `;
+            return;
+          }
+
+          containerFila.innerHTML = chamados.map(c => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+              <div>
+                <strong style="display: block; font-size: 0.95rem; color: #0f172a;">${c.nomeEquipamento || 'Equipamento'}</strong>
+                <small style="color: #64748b; font-size: 0.82rem;">Problema: <span style="color: #dc2626; font-weight: 600;">${c.descricao || 'Não informado'}</span></small>
+                <div style="margin-top: 4px; font-size: 0.78rem; color: #0284c7;">
+                  📍 Localização: Bancada / Sala de Manutenção | Prioridade: ${c.status || 'Alta'}
+                </div>
+              </div>
+              <div>
+                <button onclick="finalizarReparo('${c.id}', '${c.equipamentoId}')" class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; cursor: pointer; background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; font-weight: 600;">
+                  ✅ Finalizar Reparo
+                </button>
+              </div>
+            </div>
+          `).join('');
+        }
+
+      } catch (err) {
+        console.error('Erro ao carregar dados:', err);
+      }
+    }
+
+    // Ação de Conclusão de Reparo (Remove chamado e atualiza equipamento para Ativo)
+    async function finalizarReparo(chamadoId, equipamentoId) {
+      if (!confirm('Deseja concluir o reparo deste equipamento e retorná-lo para Ativo?')) return;
+      
+      try {
+        if (typeof deletarChamadoManutencao === 'function') {
+          await deletarChamadoManutencao(chamadoId);
+        }
+        
+        if (equipamentoId) {
+          const token = localStorage.getItem('netstock_token') || '';
+          await fetch(`${API_BASE_URL}/equipamentos/${equipamentoId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({ status: 'Ativo', localizacao: 'Almoxarifado Central' })
+          });
+        }
+
+        alert('✅ Reparo finalizado com sucesso!');
+        location.reload();
+      } catch (e) {
+        alert('❌ Erro ao finalizar reparo: ' + e.message);
+      }
+    }
+
+    // Submissão do Formulário de Chamado
+    document.getElementById('form-novo-chamado').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const selectEqp = document.getElementById('m-eqp');
+      const eqpId = selectEqp.value;
+      const nomeEquipamentoTexto = selectEqp.options[selectEqp.selectedIndex] ? selectEqp.options[selectEqp.selectedIndex].text : 'Equipamento';
+      
+      const defeitoSelect = document.getElementById('m-desc-select').value;
+      const defeitoOutro = document.getElementById('m-desc-outro-input').value.trim();
+      const moverBancada = document.getElementById('m-mover-bancada').checked;
+      
+      const statusValueRaw = document.getElementById('m-status').value || 'Alta prioridade|alta|!';
+      const [statusNome, tipoStatus, icone] = statusValueRaw.split('|');
+
+      if (!eqpId) return alert('⚠️ Selecione o equipamento.');
+      if (!defeitoSelect) return alert('⚠️ Selecione o tipo de problema.');
+
+      const descricaoFinal = (defeitoSelect === 'Outros') ? `Outros: ${defeitoOutro}` : defeitoSelect;
+
+      try {
+        await criarChamadoManutencao({
+          equipamentoId: String(eqpId),
+          nomeEquipamento: nomeEquipamentoTexto,
+          descricao: descricaoFinal,
+          status: statusNome || 'Alta prioridade',
+          tipoStatus: tipoStatus || 'alta',
+          icone: icone || '!',
+          moverParaBancada: Boolean(moverBancada)
+        });
+
+        alert('✅ Chamado de manutenção registrado com sucesso!');
+        document.getElementById('modal-chamado').classList.remove('active');
+        location.reload();
+      } catch (err) {
+        alert('❌ Erro ao criar chamado: ' + err.message);
+      }
+    });
+  </script>
 
   <script type="module" src="./js/main.js"></script>
 </body>

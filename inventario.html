@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inventário & Tombamento | NetStock</title>
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -28,44 +29,49 @@
       <header class="topbar">
         <div>
           <div class="eyebrow">GESTÃO DE ATIVOS</div>
-          <h1>Inventário & Tombamento</h1>
+          <h1>Inventário & Patrimônio</h1>
           <p class="subtitle">Equipamentos cadastrados, tombados e monitorados na infraestrutura.</p>
         </div>
         <div class="user-chip">
-          <span>Administradora</span>
-          <span class="avatar">MC</span>
+          <span>Nilson Chaves</span>
+          <span class="avatar">NC</span>
         </div>
       </header>
 
-      <!-- Formulário Inline com Seleção Padronizada de Tipo/Categoria -->
-      <form id="form-produto" class="form-cadastro-inline" style="flex-wrap: wrap; gap: 10px;">
+      <!-- Formulário Inline de Cadastro -->
+      <form id="form-produto" class="form-cadastro-inline" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
         <input type="text" id="nome" placeholder="Nome do equipamento" required class="form-input flex-1">
         
-        <!-- Menu Suspenso de Categoria Padronizada -->
-        <select id="categoria" required class="form-input flex-1" style="background-color: #fff;">
-          <option value="" disabled selected>Selecione o Tipo/Categoria...</option>
+        <select id="categoria" required class="form-input flex-1">
+          <option value="">Selecione o Tipo/Categoria...</option>
           <option value="Switch">Switch</option>
           <option value="Roteador">Roteador</option>
           <option value="Firewall">Firewall</option>
-          <option value="Access Point">Access Point</option>
           <option value="Servidor">Servidor</option>
-          <option value="Patch Panel">Patch Panel</option>
-          <option value="Nobreak / UPS">Nobreak / UPS</option>
-          <option value="Modem / OLT">Modem / OLT</option>
+          <option value="Access Point">Access Point</option>
+          <option value="Cabo / Acessório">Cabo / Acessório</option>
           <option value="Outros">Outros</option>
         </select>
 
         <input type="text" id="localizacao" placeholder="Localização (ex: Rack 02)" required class="form-input flex-1">
-        <input type="text" id="responsavel" placeholder="Responsável Técnico" required class="form-input flex-1">
-        <input type="number" id="preco" placeholder="Valor (R$)" required class="form-input w-140">
+        
+        <!-- Responsável Técnico BLOQUEADO e Preenchido com o Usuário Autenticado -->
+        <input type="text" id="responsavel" placeholder="Responsável Técnico" readonly required class="form-input flex-1" style="background-color: rgba(255,255,255,0.05); cursor: not-allowed; opacity: 0.85;" title="Definido automaticamente pelo usuário logado">
+
+        <input type="number" step="0.01" id="preco" placeholder="Valor (R$)" required class="form-input w-140">
+        
         <button type="submit" class="btn-primary">+ Tombar / Cadastrar</button>
       </form>
 
       <section class="panel">
-        <div class="panel-header">
-          <h2>Ativos em Operação</h2>
-          <span class="subtitle">Lista unificada de patrimônio</span>
+        <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h2>Ativos em Operação</h2>
+            <span class="subtitle">Lista unificada de patrimônio</span>
+          </div>
+          <button type="button" class="btn btn-sm btn-secondary" onclick="limparFiltros()" style="font-size: 0.8rem;">🔄 Limpar Filtros</button>
         </div>
+
         <div class="table-wrap">
           <table>
             <thead>
@@ -78,9 +84,36 @@
                 <th>Valor</th>
                 <th>Ações</th>
               </tr>
+              <tr style="background-color: rgba(255,255,255,0.02);">
+                <th style="padding: 4px 8px;">
+                  <input type="text" id="flt-patrimonio" list="dl-patrimonio" placeholder="Filtrar..." oninput="aplicarFiltros()" class="form-input" style="width: 100%; font-size: 0.78rem; padding: 4px 6px;">
+                  <datalist id="dl-patrimonio"></datalist>
+                </th>
+                <th style="padding: 4px 8px;">
+                  <input type="text" id="flt-equipamento" list="dl-equipamento" placeholder="Filtrar..." oninput="aplicarFiltros()" class="form-input" style="width: 100%; font-size: 0.78rem; padding: 4px 6px;">
+                  <datalist id="dl-equipamento"></datalist>
+                </th>
+                <th style="padding: 4px 8px;">
+                  <input type="text" id="flt-tipo" list="dl-tipo" placeholder="Filtrar..." oninput="aplicarFiltros()" class="form-input" style="width: 100%; font-size: 0.78rem; padding: 4px 6px;">
+                  <datalist id="dl-tipo"></datalist>
+                </th>
+                <th style="padding: 4px 8px;">
+                  <input type="text" id="flt-localizacao" list="dl-localizacao" placeholder="Filtrar..." oninput="aplicarFiltros()" class="form-input" style="width: 100%; font-size: 0.78rem; padding: 4px 6px;">
+                  <datalist id="dl-localizacao"></datalist>
+                </th>
+                <th style="padding: 4px 8px;">
+                  <input type="text" id="flt-responsavel" list="dl-responsavel" placeholder="Filtrar..." oninput="aplicarFiltros()" class="form-input" style="width: 100%; font-size: 0.78rem; padding: 4px 6px;">
+                  <datalist id="dl-responsavel"></datalist>
+                </th>
+                <th style="padding: 4px 8px;">
+                  <input type="text" id="flt-valor" list="dl-valor" placeholder="Filtrar..." oninput="aplicarFiltros()" class="form-input" style="width: 100%; font-size: 0.78rem; padding: 4px 6px;">
+                  <datalist id="dl-valor"></datalist>
+                </th>
+                <th style="padding: 4px 8px;"></th>
+              </tr>
             </thead>
             <tbody id="tabela-produtos-body">
-              <!-- Renderizado via JavaScript -->
+              <!-- Renderizado via JS -->
             </tbody>
           </table>
         </div>
@@ -88,6 +121,250 @@
     </main>
   </div>
 
-  <script type="module" src="./js/main.js"></script>
+  <script src="js/api.js"></script>
+
+  <script>
+    let todosEquipamentosGlobal = [];
+    let ativosInventarioBase = [];
+
+    async function carregarInventario() {
+      try {
+        todosEquipamentosGlobal = await obterTodosEquipamentos();
+
+        // Exibe 100% dos equipamentos cadastrados no inventário
+        ativosInventarioBase = todosEquipamentosGlobal || [];
+
+        popularDatalistsFiltro(ativosInventarioBase);
+        renderizarTabela(ativosInventarioBase);
+
+        // Preenche obrigatoriamente e bloqueia o responsável
+        const usrLogado = obterUsuarioLogado();
+        const inputResp = document.getElementById('responsavel');
+        if (inputResp && usrLogado.nome) {
+          inputResp.value = usrLogado.nome;
+        }
+      } catch (erro) {
+        console.error('❌ Erro ao carregar inventário:', erro);
+      }
+}
+
+    function popularDatalistsFiltro(lista) {
+      const extrairUnicos = (prop) => [...new Set(lista.map(item => item[prop] || '').filter(val => val !== ''))].sort();
+
+      preencherDatalist('dl-patrimonio', extrairUnicos('numPatrimonio'));
+      preencherDatalist('dl-equipamento', extrairUnicos('nome'));
+      preencherDatalist('dl-tipo', extrairUnicos('tipo'));
+      preencherDatalist('dl-localizacao', extrairUnicos('localizacao'));
+      preencherDatalist('dl-responsavel', extrairUnicos('responsavel'));
+      
+      const valores = [...new Set(lista.map(item => {
+        const val = Number(item.precoVenda) || 0;
+        return `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+      }))].sort();
+
+      preencherDatalist('dl-valor', valores);
+    }
+
+    function preencherDatalist(idDl, listaValores) {
+      const dl = document.getElementById(idDl);
+      if (!dl) return;
+      dl.innerHTML = listaValores.map(v => `<option value="${v}">`).join('');
+    }
+
+    function aplicarFiltros() {
+      const fPat = document.getElementById('flt-patrimonio').value.toLowerCase().trim();
+      const fEqp = document.getElementById('flt-equipamento').value.toLowerCase().trim();
+      const fTip = document.getElementById('flt-tipo').value.toLowerCase().trim();
+      const fLoc = document.getElementById('flt-localizacao').value.toLowerCase().trim();
+      const fRes = document.getElementById('flt-responsavel').value.toLowerCase().trim();
+      const fVal = document.getElementById('flt-valor').value.toLowerCase().trim();
+
+      const filtrados = ativosInventarioBase.filter(eq => {
+        const pat = (eq.numPatrimonio || '').toLowerCase();
+        const nome = (eq.nome || '').toLowerCase();
+        const tipo = (eq.tipo || '').toLowerCase();
+        const loc = (eq.localizacao || '').toLowerCase();
+        const resp = (eq.responsavel || '').toLowerCase();
+        const valFormatted = `r$ ${(Number(eq.precoVenda) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`.toLowerCase();
+
+        return (!fPat || pat.includes(fPat)) &&
+               (!fEqp || nome.includes(fEqp)) &&
+               (!fTip || tipo.includes(fTip)) &&
+               (!fLoc || loc.includes(fLoc)) &&
+               (!fRes || resp.includes(fRes)) &&
+               (!fVal || valFormatted.includes(fVal));
+      });
+
+      renderizarTabela(filtrados);
+    }
+
+    function limparFiltros() {
+      document.getElementById('flt-patrimonio').value = '';
+      document.getElementById('flt-equipamento').value = '';
+      document.getElementById('flt-tipo').value = '';
+      document.getElementById('flt-localizacao').value = '';
+      document.getElementById('flt-responsavel').value = '';
+      document.getElementById('flt-valor').value = '';
+      renderizarTabela(ativosInventarioBase);
+    }
+
+    function renderizarTabela(lista) {
+      const tabelaCorpo = document.getElementById('tabela-produtos-body');
+      if (!tabelaCorpo) return;
+
+      if (lista.length === 0) {
+        tabelaCorpo.innerHTML = '<tr><td colspan="7" class="text-center">Nenhum equipamento encontrado com os filtros aplicados.</td></tr>';
+        return;
+      }
+
+      tabelaCorpo.innerHTML = lista.map(eq => {
+        // Adiciona o aviso discreto "(em manutenção)" em laranja se o item estiver em manutenção
+        const estaEmManutencao = eq.status === 'Em Manutenção';
+        const tagManutencao = estaEmManutencao 
+          ? ' <span style="color: #d97706; font-size: 0.8rem; font-weight: 600;">(em manutenção)</span>' 
+          : '';
+
+        return `
+          <tr>
+            <td><strong>${eq.numPatrimonio || 'N/A'}</strong></td>
+            <td>${eq.nome}${tagManutencao}</td>
+            <td><span class="badge">${eq.tipo || 'Geral'}</span></td>
+            <td>${eq.localizacao || '-'}</td>
+            <td>${eq.responsavel || '-'}</td>
+            <td>R$ ${(Number(eq.precoVenda) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+            <td style="display: flex; gap: 6px;">
+              ${eq.status === 'Obsoleto' ? 
+                `<span class="badge bg-danger" style="align-self: center;">Obsoleto</span>` : 
+                `<button class="btn btn-sm btn-warning" onclick="marcarObsoleto('${eq.id}', '${eq.nome}')">Mover p/ Descarte</button>`
+              }
+              <button class="btn btn-sm btn-danger" onclick="excluirAtivo('${eq.id}')">Excluir</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function geradorSequencialPatrimonio(lista) {
+      const anoAtual = new Date().getFullYear();
+      const prefixo = `PAT-${anoAtual}-`;
+      let maiorSequencia = 0;
+
+      if (Array.isArray(lista)) {
+        lista.forEach(eq => {
+          const pat = eq.numPatrimonio || '';
+          if (pat.startsWith(prefixo)) {
+            const numeroStr = pat.replace(prefixo, '');
+            const numero = parseInt(numeroStr, 10);
+            if (!isNaN(numero) && numero > maiorSequencia) {
+              maiorSequencia = numero;
+            }
+          }
+        });
+      }
+
+      const proximoNumero = maiorSequencia + 1;
+      return `${prefixo}${String(proximoNumero).padStart(3, '0')}`;
+    }
+
+    function geradorCodigoTecnico(tipo, lista) {
+      const mapaSiglas = {
+        'Switch': 'SWT',
+        'Roteador': 'RT',
+        'Firewall': 'FW',
+        'Servidor': 'SRV',
+        'Access Point': 'AP',
+        'Cabo / Acessório': 'CAB'
+      };
+
+      const sigla = mapaSiglas[tipo] || 'EQP';
+      let maiorContador = 0;
+
+      if (Array.isArray(lista)) {
+        lista.forEach(eq => {
+          const cod = eq.codigo || '';
+          if (cod.startsWith(`${sigla}-`)) {
+            const numPart = cod.replace(`${sigla}-`, '');
+            const num = parseInt(numPart, 10);
+            if (!isNaN(num) && num > maiorContador) {
+              maiorContador = num;
+            }
+          }
+        });
+      }
+
+      const proximo = maiorContador + 1;
+      return `${sigla}-${String(proximo).padStart(3, '0')}`;
+    }
+
+    async function excluirAtivo(id) {
+      if (confirm('Deseja realmente remover este ativo do patrimônio?')) {
+        try {
+          await deletarEquipamento(id);
+          alert('Equipamento removido com sucesso!');
+          carregarInventario();
+        } catch (err) {
+          alert('Erro ao excluir: ' + err.message);
+        }
+      }
+    }
+
+    async function marcarObsoleto(id, nome) {
+      if (confirm(`Deseja mover o equipamento "${nome}" para o almoxarifado de descarte?`)) {
+        try {
+          const novaLocalizacao = 'Almoxarifado de Obsolescência / Reuso';
+          await atualizarEquipamento(id, { 
+            status: 'Obsoleto',
+            localizacao: novaLocalizacao
+          });
+
+          const histKey = `hist_${id}`;
+          const historicos = JSON.parse(localStorage.getItem(histKey) || '[]');
+          historicos.unshift({
+            data: new Date().toLocaleDateString('pt-BR'),
+            localizacao: novaLocalizacao,
+            responsavel: 'Setor de Descarte',
+            motivo: 'Equipamento declarado obsoleto e transferido para descarte/reuso'
+          });
+          localStorage.setItem(histKey, JSON.stringify(historicos));
+
+          alert('Equipamento marcado como Obsoleto e transferido para o Almoxarifado!');
+          carregarInventario();
+        } catch (err) {
+          alert('Erro ao mover para descarte: ' + err.message);
+        }
+      }
+    }
+
+    document.getElementById('form-produto').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const tipoSelecionado = document.getElementById('categoria').value;
+        const proximoPatrimonio = geradorSequencialPatrimonio(todosEquipamentosGlobal);
+        const proximoCodigoTecnico = geradorCodigoTecnico(tipoSelecionado, todosEquipamentosGlobal);
+        const usrLogado = obtainingUsuarioLogado();
+
+        const novoEquipamento = {
+          numPatrimonio: proximoPatrimonio,
+          codigo: proximoCodigoTecnico,
+          nome: document.getElementById('nome').value,
+          tipo: tipoSelecionado,
+          localizacao: document.getElementById('localizacao').value,
+          responsavel: usrLogado.nome || document.getElementById('responsavel').value,
+          precoVenda: parseFloat(document.getElementById('preco').value) || 0,
+          status: 'Ativo',
+          dataTombamento: new Date().toISOString().split('T')[0]
+        };
+
+        await criarEquipamento(novoEquipamento);
+        alert(`Equipamento cadastrado com sucesso!\nPatrimônio: ${proximoPatrimonio}\nCódigo Técnico: ${proximoCodigoTecnico}`);
+        document.getElementById('form-produto').reset();
+        carregarInventario();
+      } catch (err) {
+        alert('Erro ao cadastrar equipamento: ' + err.message);
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', carregarInventario);
+  </script>
 </body>
 </html>

@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dashboard | NetStock</title>
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -37,68 +38,144 @@
         </div>
       </header>
 
-      <!-- Indicadores Rápidos -->
+      <!-- Cartões Indicadores Sincronizados -->
       <section class="grid stats">
         <article class="panel stat">
-          <span class="stat-label">Total de Ativos</span>
-          <strong id="dash-total-ativos" class="stat-value">--</strong>
-          <span class="stat-detail">No inventário</span>
+          <span class="stat-label">TOTAL DE ATIVOS</span>
+          <strong id="dash-total-ativos" class="stat-value">0</strong>
+          <span class="stat-detail">No inventário ativo</span>
         </article>
+
         <article class="panel stat">
-          <span class="stat-label">Valor Total</span>
+          <span class="stat-label">VALOR TOTAL</span>
           <strong id="dash-valor-total" class="stat-value">R$ 0,00</strong>
           <span class="stat-detail">Patrimônio alocado</span>
         </article>
+
         <article class="panel stat">
-          <span class="stat-label">Tipos Cadastrados</span>
-          <strong id="dash-total-categorias" class="stat-value">--</strong>
+          <span class="stat-label">TIPOS CADASTRADOS</span>
+          <strong id="dash-tipos" class="stat-value">0</strong>
           <span class="stat-detail">Categorias de ativos</span>
         </article>
+
         <article class="panel stat">
-          <span class="stat-label">Em Manutenção</span>
-          <strong id="dash-total-manutencao" class="stat-value">--</strong>
-          <span class="stat-detail" id="dash-manutencao-prio">Aguardando reparo</span>
+          <span class="stat-label">EM MANUTENÇÃO</span>
+          <strong id="dash-manutencao" class="stat-value">0</strong>
+          <span class="stat-detail">Aguardando reparo</span>
         </article>
       </section>
 
-      <!-- Grade Principal do Dashboard -->
-      <div class="grid two-col">
-        <section class="panel">
+      <div class="grid two-col" style="margin-top: 20px;">
+        <!-- Tabela de Ativos Recentes -->
+        <section class="panel panel-padded">
           <div class="panel-header">
             <h2>Ativos Recentes</h2>
-            <a href="inventario.html" class="text-link">Ver todos →</a>
+            <a href="inventario.html" class="subtitle" style="text-decoration: none; color: #00d2ff;">Ver todos →</a>
           </div>
-          <div class="table-wrap">
+          <div class="table-wrap" style="margin-top: 15px;">
             <table>
               <thead>
                 <tr>
-                  <th>Código / ID</th>
-                  <th>Equipamento</th>
-                  <th>Tipo</th>
-                  <th>Valor</th>
+                  <th>CÓDIGO / PATRIMÔNIO</th>
+                  <th>EQUIPAMENTO</th>
+                  <th>TIPO</th>
+                  <th>VALOR</th>
                 </tr>
               </thead>
-              <tbody id="dash-tabela-recentes">
-                <!-- Preenchido via JavaScript -->
+              <tbody id="tabela-recentes-body">
+                <!-- Renderizado via JS -->
               </tbody>
             </table>
           </div>
         </section>
 
+        <!-- Painel Lateral de Resumo da Infraestrutura por Categoria -->
         <section class="panel panel-padded">
-          <h2>Resumo da Infraestrutura</h2>
-          <p class="subtitle">Distribuição por categoria de equipamento.</p>
-          
-          <hr class="divider">
-
-          <div id="dash-distribuicao-categorias" class="grid">
-            <!-- Preenchido dinamicamente via JS -->
+          <div class="panel-header">
+            <h2>Resumo da Infraestrutura</h2>
+            <span class="subtitle">Distribuição por categoria de equipamento</span>
+          </div>
+          <div id="container-categorias-resumo" style="margin-top: 20px; display: flex; flex-direction: column; gap: 16px;">
+            <!-- Renderizado via JS -->
           </div>
         </section>
       </div>
     </main>
   </div>
 
-  <script type="module" src="./js/main.js"></script>
+  <script src="js/api.js"></script>
+
+  <script>
+    async function carregarDashboard() {
+      try {
+        const equipamentos = await obterTodosEquipamentos();
+        
+        let chamados = [];
+        try {
+          chamados = await obterChamadosManutencao();
+        } catch (e) {
+          chamados = JSON.parse(localStorage.getItem('netstock_chamados_local') || '[]');
+        }
+
+        // Filtro: Considera ativos operacionais no inventário (ignora os totalmente descartados/reaproveitados)
+        const ativosAtivos = (equipamentos || []).filter(e => e.status !== 'Descartado' && e.status !== 'Reaproveitado');
+
+        // 1. Total de Ativos
+        document.getElementById('dash-total-ativos').innerText = ativosAtivos.length;
+
+        // 2. Valor Total do Patrimônio Alocado
+        const valorTotal = ativosAtivos.reduce((acc, item) => acc + (Number(item.precoVenda) || 0), 0);
+        document.getElementById('dash-valor-total').innerText = `R$ ${valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+
+        // 3. Tipos / Categorias Únicas Cadastradas
+        const categoriasSet = new Set(ativosAtivos.map(e => e.tipo || 'Outros'));
+        document.getElementById('dash-tipos').innerText = categoriasSet.size;
+
+        // 4. Equipamentos em Manutenção
+        const emManutencaoCount = (equipamentos || []).filter(e => e.status === 'Em Manutenção').length || (chamados || []).length;
+        document.getElementById('dash-manutencao').innerText = emManutencaoCount;
+
+        // 5. Renderizar Tabela de Ativos Recentes (Últimos 6 cadastrados)
+        const tabelaRecentes = document.getElementById('tabela-recentes-body');
+        if (ativosAtivos.length === 0) {
+          tabelaRecentes.innerHTML = '<tr><td colspan="4" class="text-center">Nenhum ativo cadastrado.</td></tr>';
+        } else {
+          const ultimos = [...ativosAtivos].reverse().slice(0, 6);
+          tabelaRecentes.innerHTML = ultimos.map(e => `
+            <tr>
+              <td><strong>${e.numPatrimonio || e.codigo || 'N/A'}</strong></td>
+              <td>${e.nome}</td>
+              <td><span class="badge">${e.tipo || 'Geral'}</span></td>
+              <td>R$ ${(Number(e.precoVenda) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+            </tr>
+          `).join('');
+        }
+
+        // 6. Resumo da Infraestrutura por Categoria (Contagem Dinâmica)
+        const contagemPorCategoria = {};
+        ativosAtivos.forEach(e => {
+          const cat = e.tipo || 'Outros';
+          contagemPorCategoria[cat] = (contagemPorCategoria[cat] || 0) + 1;
+        });
+
+        const containerCategorias = document.getElementById('container-categorias-resumo');
+        if (Object.keys(contagemPorCategoria).length === 0) {
+          containerCategorias.innerHTML = '<p class="subtitle">Nenhum dado de categoria disponível.</p>';
+        } else {
+          containerCategorias.innerHTML = Object.entries(contagemPorCategoria).map(([categoria, qtd]) => `
+            <div>
+              <span class="subtitle" style="font-size: 0.9rem; font-weight: 500;">${categoria}</span>
+              <p style="font-size: 1.4rem; font-weight: bold; margin: 2px 0 0 0;">${qtd} ${qtd === 1 ? 'unidade' : 'unidades'}</p>
+            </div>
+          `).join('');
+        }
+
+      } catch (err) {
+        console.error('Erro ao sincronizar Dashboard:', err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', carregarDashboard);
+  </script>
 </body>
 </html>
