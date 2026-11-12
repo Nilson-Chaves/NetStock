@@ -341,7 +341,7 @@
         const tipoSelecionado = document.getElementById('categoria').value;
         const proximoPatrimonio = geradorSequencialPatrimonio(todosEquipamentosGlobal);
         const proximoCodigoTecnico = geradorCodigoTecnico(tipoSelecionado, todosEquipamentosGlobal);
-        const usrLogado = obtainingUsuarioLogado();
+        const usrLogado = obterUsuarioLogado();
 
         const novoEquipamento = {
           numPatrimonio: proximoPatrimonio,

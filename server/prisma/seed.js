@@ -1,9 +1,28 @@
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
+
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Povoando banco de dados com equipamentos iniciais...');
+  console.log('🌱 Povoando banco de dados inicial...');
 
+  // 1. Cria ou atualiza o usuário Administrador padrão
+  const senhaHash = await bcrypt.hash('admin123', 10);
+
+  const admin = await prisma.usuario.upsert({
+    where: { email: 'nilson.vinicius@academico.ifpb.edu.br' },
+    update: {},
+    create: {
+      nome: 'Nilson Vinicius',
+      email: 'nilson.vinicius@academico.ifpb.edu.br',
+      senha: senhaHash,
+      cargo: 'Administrador',
+    },
+  });
+
+  console.log(`👤 Usuário administrador pronto: ${admin.email} (Senha: admin123)`);
+
+  // 2. Insere os equipamentos iniciais
   await prisma.equipamento.deleteMany({});
 
   await prisma.equipamento.createMany({
@@ -17,7 +36,7 @@ async function main() {
         responsavel: 'João Silva',
         precoVenda: 15400.00,
         status: 'Ativo',
-        dataTombamento: '2026-01-15'
+        dataTombamento: '2026-01-15',
       },
       {
         numPatrimonio: 'PAT-2026-002',
@@ -28,7 +47,7 @@ async function main() {
         responsavel: 'Maria Souza',
         precoVenda: 4800.00,
         status: 'Ativo',
-        dataTombamento: '2026-02-10'
+        dataTombamento: '2026-02-10',
       },
       {
         numPatrimonio: 'PAT-2026-003',
@@ -39,9 +58,9 @@ async function main() {
         responsavel: 'Carlos Lima',
         precoVenda: 8900.00,
         status: 'Em Manutenção',
-        dataTombamento: '2026-03-01'
-      }
-    ]
+        dataTombamento: '2026-03-01',
+      },
+    ],
   });
 
   console.log('✅ Equipamentos inseridos com sucesso!');

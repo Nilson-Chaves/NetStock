@@ -1,5 +1,8 @@
 FROM node:18-alpine
 
+# Necessário para o Prisma rodar corretamente no Alpine Linux
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
 COPY package*.json ./
@@ -13,4 +16,4 @@ RUN npx prisma generate
 
 EXPOSE 3001
 
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npx prisma db push && npm start"]
