@@ -132,7 +132,9 @@
         todosEquipamentosGlobal = await obterTodosEquipamentos();
 
         // Exibe 100% dos equipamentos cadastrados no inventário
-        ativosInventarioBase = todosEquipamentosGlobal || [];
+        ativosInventarioBase = (todosEquipamentosGlobal || []).filter(
+          eq => eq.status !== 'Descartado' && eq.status !== 'Reaproveitado'
+        );
 
         popularDatalistsFiltro(ativosInventarioBase);
         renderizarTabela(ativosInventarioBase);
